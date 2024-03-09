@@ -4,6 +4,11 @@ import 'package:tyrant_engine/src/model/ship.dart';
 
 part 'player.freezed.dart';
 
+enum PlayerType {
+  player,
+  enemy,
+}
+
 enum CrewState { cryo, active, killed }
 
 const startingCrew = [

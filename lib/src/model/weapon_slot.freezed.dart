@@ -19,6 +19,7 @@ mixin _$WeaponSlot {
   WeaponSlotType get type => throw _privateConstructorUsedError;
   Weapon? get deployed => throw _privateConstructorUsedError;
   int get deployCount => throw _privateConstructorUsedError;
+  int get tappedCount => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $WeaponSlotCopyWith<WeaponSlot> get copyWith =>
@@ -31,7 +32,11 @@ abstract class $WeaponSlotCopyWith<$Res> {
           WeaponSlot value, $Res Function(WeaponSlot) then) =
       _$WeaponSlotCopyWithImpl<$Res, WeaponSlot>;
   @useResult
-  $Res call({WeaponSlotType type, Weapon? deployed, int deployCount});
+  $Res call(
+      {WeaponSlotType type,
+      Weapon? deployed,
+      int deployCount,
+      int tappedCount});
 }
 
 /// @nodoc
@@ -50,6 +55,7 @@ class _$WeaponSlotCopyWithImpl<$Res, $Val extends WeaponSlot>
     Object? type = null,
     Object? deployed = null,
     Object? deployCount = null,
+    Object? tappedCount = null,
   }) {
     return _then(_value.copyWith(
       type: null == type
@@ -64,6 +70,10 @@ class _$WeaponSlotCopyWithImpl<$Res, $Val extends WeaponSlot>
           ? _value.deployCount
           : deployCount // ignore: cast_nullable_to_non_nullable
               as int,
+      tappedCount: null == tappedCount
+          ? _value.tappedCount
+          : tappedCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -76,7 +86,11 @@ abstract class _$$_WeaponSlotCopyWith<$Res>
       __$$_WeaponSlotCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({WeaponSlotType type, Weapon? deployed, int deployCount});
+  $Res call(
+      {WeaponSlotType type,
+      Weapon? deployed,
+      int deployCount,
+      int tappedCount});
 }
 
 /// @nodoc
@@ -93,6 +107,7 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
     Object? type = null,
     Object? deployed = null,
     Object? deployCount = null,
+    Object? tappedCount = null,
   }) {
     return _then(_$_WeaponSlot(
       type: null == type
@@ -107,6 +122,10 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
           ? _value.deployCount
           : deployCount // ignore: cast_nullable_to_non_nullable
               as int,
+      tappedCount: null == tappedCount
+          ? _value.tappedCount
+          : tappedCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -115,7 +134,10 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
 
 class _$_WeaponSlot implements _WeaponSlot {
   const _$_WeaponSlot(
-      {required this.type, this.deployed, this.deployCount = 0});
+      {required this.type,
+      this.deployed,
+      this.deployCount = 0,
+      this.tappedCount = 0});
 
   @override
   final WeaponSlotType type;
@@ -124,10 +146,13 @@ class _$_WeaponSlot implements _WeaponSlot {
   @override
   @JsonKey()
   final int deployCount;
+  @override
+  @JsonKey()
+  final int tappedCount;
 
   @override
   String toString() {
-    return 'WeaponSlot(type: $type, deployed: $deployed, deployCount: $deployCount)';
+    return 'WeaponSlot(type: $type, deployed: $deployed, deployCount: $deployCount, tappedCount: $tappedCount)';
   }
 
   @override
@@ -138,12 +163,14 @@ class _$_WeaponSlot implements _WeaponSlot {
             (identical(other.type, type) || other.type == type) &&
             const DeepCollectionEquality().equals(other.deployed, deployed) &&
             (identical(other.deployCount, deployCount) ||
-                other.deployCount == deployCount));
+                other.deployCount == deployCount) &&
+            (identical(other.tappedCount, tappedCount) ||
+                other.tappedCount == tappedCount));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, type,
-      const DeepCollectionEquality().hash(deployed), deployCount);
+      const DeepCollectionEquality().hash(deployed), deployCount, tappedCount);
 
   @JsonKey(ignore: true)
   @override
@@ -156,7 +183,8 @@ abstract class _WeaponSlot implements WeaponSlot {
   const factory _WeaponSlot(
       {required final WeaponSlotType type,
       final Weapon? deployed,
-      final int deployCount}) = _$_WeaponSlot;
+      final int deployCount,
+      final int tappedCount}) = _$_WeaponSlot;
 
   @override
   WeaponSlotType get type;
@@ -164,6 +192,8 @@ abstract class _WeaponSlot implements WeaponSlot {
   Weapon? get deployed;
   @override
   int get deployCount;
+  @override
+  int get tappedCount;
   @override
   @JsonKey(ignore: true)
   _$$_WeaponSlotCopyWith<_$_WeaponSlot> get copyWith =>

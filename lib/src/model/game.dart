@@ -1,4 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tyrant_engine/src/model/player.dart';
+import 'package:tyrant_engine/src/model/projectile.dart';
 
 part 'game.freezed.dart';
 
@@ -12,8 +14,12 @@ class Game with _$Game {
     required List<Projectile> projectiles,
   }) = _Game;
 
-  Game updatePlayer(playerOld, playerNew) => copyWith(
-        player: identical(player, playerOld) ? playerNew : player,
-        enemy: identical(enemy, playerOld) ? playerNew : enemy,
+  Player playerType(PlayerType type) =>
+      type == PlayerType.player ? player : enemy;
+
+  Game updatePlayer(PlayerType type, Player Function(Player) update) =>
+      copyWith(
+        player: type == PlayerType.player ? update(player) : player,
+        enemy: type == PlayerType.enemy ? update(enemy) : enemy,
       );
 }

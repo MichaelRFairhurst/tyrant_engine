@@ -1,10 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tyrant_engine/src/model/ship_build.dart';
+import 'package:tyrant_engine/src/rules/geometry.dart';
 
 part 'ship.freezed.dart';
 
 @freezed
-class Ship with _$Ship {
+class Ship with _$Ship implements Point {
   const factory Ship({
     @Default(60) int hp,
     required ShipBuild build,

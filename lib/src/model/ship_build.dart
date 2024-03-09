@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tyrant_engine/src/model/side.dart';
+import 'package:tyrant_engine/src/model/weapon_slot.dart';
+import 'package:tyrant_engine/src/model/weapon_slot_descriptor.dart';
 
 part 'ship_build.freezed.dart';
 
@@ -30,10 +32,11 @@ class ShipBuild with _$ShipBuild {
     Side Function(Side)? starboard,
   }) =>
       copyWith(
-        forward: f == null ? forward : f(forward),
-        aft: f == null ? aft : f(aft),
-        port: f == null ? port : f(port),
-        starboard: f == null ? starboard : f(starboard),
+        forward: forward == null ? this.forward : forward(this.forward),
+        aft: aft == null ? this.aft : aft(this.aft),
+        port: port == null ? this.port : port(this.port),
+        starboard:
+            starboard == null ? this.starboard : starboard(this.starboard),
       );
 
   Side quadrant(Quadrant quadrant) {
@@ -78,12 +81,12 @@ class ShipBuild with _$ShipBuild {
     for (final quadrant in Quadrant.values) {
       final side = this.quadrant(quadrant);
 
-      for (int i = 0; i < side.weaponSlots.length; ++i) {
-        final type = side.weaponSlots[i].type;
+      for (int i = 0; i < side.weapons.length; ++i) {
+        final type = side.weapons[i].type;
         if (!result.containsKey(type)) {
           result[type] = <WeaponSlotDescriptor>[];
         }
-        result[type].add(WeaponSlotDescriptor(quadrant: quadrant, slotIdx: i));
+        result[type]!.add(WeaponSlotDescriptor(quadrant: quadrant, slotIdx: i));
       }
     }
 

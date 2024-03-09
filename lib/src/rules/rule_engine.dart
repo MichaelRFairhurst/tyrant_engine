@@ -7,9 +7,12 @@ import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/projectile.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
 import 'package:tyrant_engine/src/model/ship_build.dart';
+import 'package:tyrant_engine/src/model/side.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
+import 'package:tyrant_engine/src/model/weapon_slot_descriptor.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
 import 'package:tyrant_engine/src/rules/constants.dart';
+import 'package:tyrant_engine/src/rules/geometry.dart';
 import 'package:tyrant_engine/src/rules/outcomes.dart';
 
 enum Phase {
@@ -24,7 +27,29 @@ enum Phase {
 
 class RuleEngine {
   final random = Random();
+  final geometry = Geometry();
   final diceSums = DiceSums();
+
+  Phase get startingPhase => Phase.thaw;
+
+  Phase? nextPhase(Phase phase) {
+    switch (phase) {
+      case Phase.thaw:
+        return Phase.draw;
+      case Phase.draw:
+        return Phase.regen;
+      case Phase.regen:
+        return Phase.drift;
+      case Phase.drift:
+        return Phase.burn;
+      case Phase.burn:
+        return Phase.activate;
+      case Phase.activate:
+        return Phase.shootyShoot;
+      case Phase.shootyShoot:
+        return null;
+    }
+  }
 
   Game initializeGame({
     required List<Weapon> playerDeck,
@@ -77,7 +102,7 @@ class RuleEngine {
 
   Outcome<Game> tick({
     required Game game,
-    required Player player,
+    required PlayerType player,
     required Phase phase,
     required int round,
   }) {
@@ -101,36 +126,54 @@ class RuleEngine {
     }
   }
 
-  Outcome<Game> thaw(Game game, Player player, int round) {
+  Outcome<Game> thaw(Game game, PlayerType player, int round) {
     int thawIdx = startingCrewCount + round;
     if (thawIdx >= totalCrew) {
       return Outcome<Game>.single(game);
     }
 
-    if (player.crew[thawIdx] == CrewState.killed) {
+    final crew = game.playerType(player).crew;
+    if (crew[thawIdx] == CrewState.killed) {
       return Outcome<Game>.single(game);
     }
 
     return Outcome<Game>.single(game.updatePlayer(
         player,
-        player.copyWith(
-          crew: player.crew.toList()
-            ..remove(thawIdx)
-            ..insert(thawIdx, CrewState.active),
-        )));
+        (player) => player.copyWith(
+              crew: player.crew.toList()
+                ..remove(thawIdx)
+                ..insert(thawIdx, CrewState.active),
+            )));
   }
 
-  Outcome<Game> regen(Game game, Player player) {
+  Outcome<Game> regen(Game game, PlayerType player) {
+    Side untapAll(Side side) => side.copyWith(
+          weapons: side.weapons
+              .map((slot) => slot.copyWith(
+                    tappedCount: 0,
+                  ))
+              .toList(),
+        );
+
     return Outcome<Game>.single(game.updatePlayer(
       player,
-      player.copyWith(
+      (player) => player.copyWith(
         ru: fullRU,
-        heat: max(0, player.heat - heatRegen),
+        heat: max<int>(0, player.heat - heatRegen),
+        ship: player.ship.copyWith(
+          build: player.ship.build.on(
+            forward: untapAll,
+            aft: untapAll,
+            port: untapAll,
+            starboard: untapAll,
+          ),
+        ),
       ),
     ));
   }
 
-  Outcome<Game> draw(Game game, Player player) {
+  Outcome<Game> draw(Game game, PlayerType pType) {
+    final player = game.playerType(pType);
     final uniqueCards = <Weapon, int>{};
 
     for (final card in player.deck) {
@@ -147,8 +190,8 @@ class RuleEngine {
           .map((entry) => RandomOutcome<Game>(
                 probability: entry.value / deckSize,
                 result: game.updatePlayer(
-                  player,
-                  player.copyWith(
+                  pType,
+                  (player) => player.copyWith(
                     hand: player.hand.toList()..add(entry.key),
                     deck: player.deck.toList()..remove(entry.key),
                   ),
@@ -158,7 +201,7 @@ class RuleEngine {
     );
   }
 
-  Outcome<Game> drift(Game game, Player player) {
+  Outcome<Game> drift(Game game, PlayerType player) {
     final driftedProjectiles = <Projectile>[];
     final impacts = <Weapon>[];
 
@@ -174,19 +217,20 @@ class RuleEngine {
     final driftsOnly = game
         .updatePlayer(
             player,
-            player.copyWith(
-              ship: player.ship.copyWith(
-                x: player.ship.x + player.ship.momentumLateral,
-                y: player.ship.y + player.ship.momentumForward,
-              ),
-            ))
+            (player) => player.copyWith(
+                  ship: player.ship.copyWith(
+                    x: player.ship.x + player.ship.momentumLateral,
+                    y: player.ship.y + player.ship.momentumForward,
+                  ),
+                ))
         .copyWith(
           projectiles: driftedProjectiles,
         );
 
     var outcome = Outcome.single(driftsOnly);
 
-    final target = identical(game.player, player) ? game.enemy : game.player;
+    final target =
+        player == PlayerType.player ? PlayerType.enemy : PlayerType.player;
     for (final impact in impacts) {
       final newOutcomes = <RandomOutcome<Game>>{};
       for (final state in outcome.randomOutcomes) {
@@ -206,36 +250,38 @@ class RuleEngine {
     return outcome;
   }
 
-  Outcome<Game> applyDamage(Game game, Player target, Dice damage) {
+  Outcome<Game> applyDamage(Game game, PlayerType target, Dice damage) {
+    final targetPlayer = game.playerType(target);
     return Outcome<Game>(
         randomOutcomes: diceSums.roll(damage, (p, result) {
       // TODO: Properly damage shields/armor/hp, and the proper quadrant!
-      final damaged = target.copyWith(
-        ship: target.ship.copyWith(
-          hp: target.ship.hp - result,
+      final damaged = targetPlayer.copyWith(
+        ship: targetPlayer.ship.copyWith(
+          hp: targetPlayer.ship.hp - result,
         ),
       );
 
       return RandomOutcome<Game>(
         probability: p,
-        result: game.updatePlayer(target, damaged),
+        result: game.updatePlayer(target, (player) => damaged),
       );
     }).toSet());
   }
 
-  Projectile? driftProjectile(Game game, Player player, Projectile projectile) {
+  Projectile? driftProjectile(
+      Game game, PlayerType player, Projectile projectile) {
     final Ship target;
     if (projectile.friendly) {
       target = game.enemy.ship;
 
-      if (identical(player, game.enemy)) {
+      if (player == PlayerType.enemy) {
         // Don't drift player's projectiles on enemy's turn
         return projectile;
       }
     } else {
       target = game.player.ship;
 
-      if (identical(player, game.player)) {
+      if (player == PlayerType.player) {
         // Don't drift enemy's projectiles on player's turn
         return projectile;
       }
@@ -259,7 +305,7 @@ class RuleEngine {
     );
   }
 
-  List<Action> playerActions(Game game, Player player, Phase phase) {
+  List<Action> playerActions(Game game, PlayerType player, Phase phase) {
     switch (phase) {
       case Phase.thaw:
       case Phase.regen:
@@ -271,13 +317,17 @@ class RuleEngine {
         return activateActions(game, player);
 
       case Phase.burn:
+        // TODO: implement burn
+        return [];
+
       case Phase.shootyShoot:
-        throw 'unimplemented';
+        return fireWeaponActions(game, player);
     }
   }
 
-  List<PlayWeaponAction> activateActions(Game game, Player player) {
+  List<PlayWeaponAction> activateActions(Game game, PlayerType pType) {
     final actions = <PlayWeaponAction>[];
+    final player = game.playerType(pType);
     final deployables = player.ship.build.slotTypesMap();
     for (final weapon in player.hand) {
       final descriptors = deployables[weapon.type];
@@ -288,13 +338,51 @@ class RuleEngine {
       for (final descriptor in descriptors) {
         final slot = player.ship.build.slot(descriptor);
 
-        if (slot.weapon != null && slot.weapon != weapon) {
+        if (slot.deployed != null && slot.deployed != weapon) {
           continue;
         }
 
         actions.add(PlayWeaponAction(
           card: weapon,
           slot: descriptor,
+        ));
+      }
+    }
+
+    return actions;
+  }
+
+  List<Action> fireWeaponActions(Game game, PlayerType pType) {
+    final actions = <Action>[const EndPhaseAction()];
+    final player = game.playerType(pType);
+
+    final target = identical(game.player, player) ? game.enemy : game.player;
+    final distance = geometry.distance(player.ship, target.ship);
+
+    for (final quadrant in Quadrant.values) {
+      final side = player.ship.build.quadrant(quadrant);
+      for (int i = 0; i < side.weapons.length; ++i) {
+        final slot = side.weapons[i];
+        if (slot.tappedCount >= slot.deployCount) {
+          continue;
+        }
+
+        final desc = WeaponSlotDescriptor(quadrant: quadrant, slotIdx: i);
+        final weapon = slot.deployed!;
+
+        final range = weapon.range;
+        if (range != null && distance > range) {
+          continue;
+        }
+
+        // TODO: check orientation of ship
+        if (player.ru < weapon.ru || player.heat > weapon.oht) {
+          continue;
+        }
+
+        actions.add(FireWeaponAction(
+          slot: desc,
+          ruleEngine: this,
         ));
       }
     }

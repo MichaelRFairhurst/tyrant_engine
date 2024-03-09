@@ -1,5 +1,6 @@
 import 'package:tyrant_engine/tyrant_engine.dart';
 
 void main(List<String> arguments) {
-  TyrantEngine().run();
+  final engine = TyrantEngine();
+  engine.run(engine.defaultGame());
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/dice_sums.dart';
+import 'package:tyrant_engine/src/model/dice.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/projectile.dart';
@@ -88,7 +89,7 @@ class RuleEngine {
         return regen(game, player);
 
       case Phase.draw:
-        throw 'unimplemented';
+        return draw(game, player);
 
       case Phase.drift:
         return drift(game, player);
@@ -129,6 +130,34 @@ class RuleEngine {
     ));
   }
 
+  Outcome<Game> draw(Game game, Player player) {
+    final uniqueCards = <Weapon, int>{};
+
+    for (final card in player.deck) {
+      if (uniqueCards.containsKey(card)) {
+        uniqueCards[card] = uniqueCards[card]! + 1;
+      } else {
+        uniqueCards[card] = 1;
+      }
+    }
+
+    final deckSize = player.deck.length;
+    return Outcome<Game>(
+      randomOutcomes: uniqueCards.entries
+          .map((entry) => RandomOutcome<Game>(
+                probability: entry.value / deckSize,
+                result: game.updatePlayer(
+                  player,
+                  player.copyWith(
+                    hand: player.hand.toList()..add(entry.key),
+                    deck: player.deck.toList()..remove(entry.key),
+                  ),
+                ),
+              ))
+          .toSet(),
+    );
+  }
+
   Outcome<Game> drift(Game game, Player player) {
     final driftedProjectiles = <Projectile>[];
     final impacts = <Weapon>[];
@@ -161,7 +190,7 @@ class RuleEngine {
     for (final impact in impacts) {
       final newOutcomes = <RandomOutcome<Game>>{};
       for (final state in outcome.randomOutcomes) {
-        final dmgStates = applyDamage(state.result, target, impact);
+        final dmgStates = applyDamage(state.result, target, impact.damage);
 
         for (final dmgState in dmgStates.randomOutcomes) {
           newOutcomes.add(RandomOutcome<Game>(
@@ -177,9 +206,9 @@ class RuleEngine {
     return outcome;
   }
 
-  Outcome<Game> applyDamage(Game game, Player target, Weapon weapon) {
+  Outcome<Game> applyDamage(Game game, Player target, Dice damage) {
     return Outcome<Game>(
-        randomOutcomes: diceSums.roll(weapon.damage, (p, result) {
+        randomOutcomes: diceSums.roll(damage, (p, result) {
       // TODO: Properly damage shields/armor/hp, and the proper quadrant!
       final damaged = target.copyWith(
         ship: target.ship.copyWith(

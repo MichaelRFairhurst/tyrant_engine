@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/tree.dart' as minimax;
+import 'package:tyrant_engine/src/cli/printer.dart';
 import 'package:tyrant_engine/src/model/game.dart';
+import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
 import 'package:tyrant_engine/src/rules/outcomes.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
@@ -10,9 +12,15 @@ import 'package:tyrant_engine/src/content/ships.dart' as ships;
 
 class TyrantEngine {
   final ruleEngine = RuleEngine();
+  final printer = Printer();
   final random = Random();
 
   void run(Game game) {
+    print('----- NEW GAME! ----');
+    printer.printGame(game);
+    print('');
+    print('');
+
     while (true) {
       game = playerTurn(game);
 
@@ -20,32 +28,35 @@ class TyrantEngine {
           game.secondPlayer.ship.hp < 1 ||
           game.round == 30) {
         print('----GAME OVER!-----');
-        print(game);
+        printer.printGame(game);
         return;
       }
 
-      print('');
-      print('!!!!!!!--------- NEW ROUND: ${game.round} ---------!!!!!!!');
-      print('');
+      if (game.turn == PlayerType.firstPlayer) {
+        print('');
+        print('!!!!!!!--------- NEW ROUND: ${game.round} ---------!!!!!!!');
+        print('');
+      }
     }
   }
 
   Game playerTurn(Game game) {
     print('--- NEW TURN: ${game.turn} ----');
+    print('');
 
     final samePlayer = game.turn;
     while (game.turn == samePlayer) {
       print('[${game.phase}]');
-      print('');
       var outcomes = ruleEngine.tick(
         game: game,
       );
       game = pickOutcome(outcomes);
 
-      print('updated game: $game');
-      print('');
+      printer.printGame(game);
       game = performActions(game);
     }
+
+    printer.printGame(game);
 
     return game;
   }
@@ -61,16 +72,10 @@ class TyrantEngine {
 
       final chosen = pickAction(actions);
 
-      if (chosen is EndPhaseAction) {
-        break;
-      }
-
-      print('ACTION: $chosen');
-      print('');
+      print('[ACTION: $chosen]');
 
       game = pickOutcome(chosen.perform(game));
-      print('STATE = $game');
-      print('');
+      printer.printGame(game);
     }
     return game;
   }

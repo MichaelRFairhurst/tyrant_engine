@@ -64,6 +64,9 @@ class BurnAction implements Action {
           ),
         )));
   }
+
+  @override
+  String toString() => 'Burn ${isLateral ? "laterally" : "forward"} by $amount';
 }
 
 class PlayWeaponAction implements Action {
@@ -96,13 +99,18 @@ class PlayWeaponAction implements Action {
           phase: Phase.shootyShoot,
         ));
   }
+
+  @override
+  String toString() => 'Play weapon ${card.name} onto slot $slot';
 }
 
 class FireWeaponAction implements Action {
+  final String weaponName;
   final WeaponSlotDescriptor slot;
   final RuleEngine ruleEngine;
 
   FireWeaponAction({
+    required this.weaponName,
     required this.slot,
     required this.ruleEngine,
   });
@@ -142,4 +150,7 @@ class FireWeaponAction implements Action {
       ));
     }
   }
+
+  @override
+  String toString() => 'Fire weapon $weaponName (from slot $slot)';
 }

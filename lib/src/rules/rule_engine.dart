@@ -39,16 +39,16 @@ class RuleEngine {
     required ShipBuild enemyBuild,
   }) {
     return Game(
-      firstPlayer: Player(
+      firstPlayer: dealStart(Player(
         ship: initShip(playerBuild, 0),
         hand: [],
         deck: playerDeck,
-      ),
-      secondPlayer: Player(
+      )),
+      secondPlayer: dealStart(Player(
         ship: initShip(playerBuild, 24),
         hand: [],
         deck: enemyDeck,
-      ),
+      )),
       turn: PlayerType.firstPlayer,
       phase: startingPhase,
       round: 0,
@@ -109,6 +109,7 @@ class RuleEngine {
 
   Outcome<Game> thaw(Game game) {
     int thawIdx = startingCrewCount + game.round;
+    game = game.copyWith(phase: Phase.regen);
     if (thawIdx >= totalCrew) {
       return Outcome<Game>.single(game);
     }
@@ -118,15 +119,12 @@ class RuleEngine {
       return Outcome<Game>.single(game);
     }
 
-    return Outcome<Game>.single(game
-        .updateCurrentPlayer((player) => player.copyWith(
+    return Outcome<Game>.single(
+        game.updateCurrentPlayer((player) => player.copyWith(
               crew: player.crew.toList()
                 ..remove(thawIdx)
                 ..insert(thawIdx, CrewState.active),
-            ))
-        .copyWith(
-          phase: Phase.regen,
-        ));
+            )));
   }
 
   Outcome<Game> regen(Game game) {
@@ -273,7 +271,8 @@ class RuleEngine {
     final distX = target.x - projectile.x;
     final distY = target.y - projectile.y;
     final dist = sqrt(distX * distX + distY * distY);
-    final portion = dist / projectile.weapon.speed!;
+
+    final portion = projectile.weapon.speed! / dist;
 
     if (portion >= 1) {
       return null;
@@ -366,6 +365,7 @@ class RuleEngine {
         }
 
         actions.add(FireWeaponAction(
+          weaponName: weapon.name,
           slot: desc,
           ruleEngine: this,
         ));

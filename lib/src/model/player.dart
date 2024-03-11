@@ -5,8 +5,8 @@ import 'package:tyrant_engine/src/model/ship.dart';
 part 'player.freezed.dart';
 
 enum PlayerType {
-  player,
-  enemy,
+  firstPlayer,
+  secondPlayer,
 }
 
 enum CrewState { cryo, active, killed }

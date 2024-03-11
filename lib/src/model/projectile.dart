@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
 import 'package:tyrant_engine/src/rules/geometry.dart';
 
@@ -10,6 +11,6 @@ class Projectile with _$Projectile implements Point {
     required double x,
     required double y,
     required Weapon weapon,
-    required bool friendly,
+    required PlayerType firedBy,
   }) = _Projectile;
 }

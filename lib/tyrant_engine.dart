@@ -1,7 +1,7 @@
 import 'dart:math';
 
+import 'package:tyrant_engine/src/algorithm/tree.dart' as minimax;
 import 'package:tyrant_engine/src/model/game.dart';
-import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
 import 'package:tyrant_engine/src/rules/outcomes.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
@@ -13,57 +13,47 @@ class TyrantEngine {
   final random = Random();
 
   void run(Game game) {
-    var round = 1;
-    var player = PlayerType.player;
-
     while (true) {
-      game = playerTurn(game, player, round);
-      player =
-          player == PlayerType.player ? PlayerType.enemy : PlayerType.player;
+      game = playerTurn(game);
 
-      if (game.playerType(player).ship.hp == 0 || round == 30) {
+      if (game.firstPlayer.ship.hp < 1 ||
+          game.secondPlayer.ship.hp < 1 ||
+          game.round == 30) {
         print('----GAME OVER!-----');
         print(game);
         return;
       }
 
-      if (player == PlayerType.player) {
-        round++;
-        print('');
-        print('!!!!!!!--------- NEW ROUND: $round ---------!!!!!!!');
-        print('');
-      }
+      print('');
+      print('!!!!!!!--------- NEW ROUND: ${game.round} ---------!!!!!!!');
+      print('');
     }
   }
 
-  Game playerTurn(Game game, PlayerType player, int round) {
-    print('--- NEW TURN: $player ----');
-    Phase? phase = ruleEngine.startingPhase;
+  Game playerTurn(Game game) {
+    print('--- NEW TURN: ${game.turn} ----');
 
-    while (phase != null) {
-      print('[$phase]');
+    final samePlayer = game.turn;
+    while (game.turn == samePlayer) {
+      print('[${game.phase}]');
       print('');
       var outcomes = ruleEngine.tick(
         game: game,
-        player: player,
-        round: round,
-        phase: phase,
       );
       game = pickOutcome(outcomes);
 
       print('updated game: $game');
       print('');
-      game = performActions(game, player, phase);
-      phase = ruleEngine.nextPhase(phase);
+      game = performActions(game);
     }
 
     return game;
   }
 
-  Game performActions(Game game, PlayerType player, Phase phase) {
+  Game performActions(Game game) {
     late List<Action> actions;
     while (true) {
-      actions = ruleEngine.playerActions(game, player, phase);
+      actions = ruleEngine.playerActions(game);
 
       if (actions.isEmpty) {
         break;
@@ -78,11 +68,41 @@ class TyrantEngine {
       print('ACTION: $chosen');
       print('');
 
-      game = pickOutcome(chosen.perform(game, player));
+      game = pickOutcome(chosen.perform(game));
       print('STATE = $game');
       print('');
     }
     return game;
+  }
+
+  minimax.Branch<Game> gameToBranch(Game game) {
+    // TODO: fix
+    return decisionBranch(game);
+  }
+
+  minimax.Branch<Game> outcomeToBranch(Game game, Outcome<Game> outcome) {
+    return minimax.ExpectedValueBranch<Game>(
+        game,
+        outcome.randomOutcomes
+            .map((o) => minimax.Possibility<Game>(
+                  o.probability,
+                  gameToBranch(o.result),
+                ))
+            .toList());
+  }
+
+  minimax.Branch<Game> decisionBranch(Game game) {
+    final actions = ruleEngine.playerActions(game);
+
+    if (actions.isEmpty) {
+      return minimax.DecisionBranch<Action, Game>(game, {}, true);
+    }
+
+    return minimax.DecisionBranch<Action, Game>(
+        game,
+        Map<Action, minimax.Branch<Game> Function()>.fromEntries(actions.map(
+            (a) => MapEntry(a, () => outcomeToBranch(game, a.perform(game))))),
+        true);
   }
 
   Game pickOutcome(Outcome<Game> outcomes) {

@@ -19,7 +19,7 @@ mixin _$Projectile {
   double get x => throw _privateConstructorUsedError;
   double get y => throw _privateConstructorUsedError;
   Weapon get weapon => throw _privateConstructorUsedError;
-  bool get friendly => throw _privateConstructorUsedError;
+  PlayerType get firedBy => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ProjectileCopyWith<Projectile> get copyWith =>
@@ -32,7 +32,7 @@ abstract class $ProjectileCopyWith<$Res> {
           Projectile value, $Res Function(Projectile) then) =
       _$ProjectileCopyWithImpl<$Res, Projectile>;
   @useResult
-  $Res call({double x, double y, Weapon weapon, bool friendly});
+  $Res call({double x, double y, Weapon weapon, PlayerType firedBy});
 
   $WeaponCopyWith<$Res> get weapon;
 }
@@ -53,7 +53,7 @@ class _$ProjectileCopyWithImpl<$Res, $Val extends Projectile>
     Object? x = null,
     Object? y = null,
     Object? weapon = null,
-    Object? friendly = null,
+    Object? firedBy = null,
   }) {
     return _then(_value.copyWith(
       x: null == x
@@ -68,10 +68,10 @@ class _$ProjectileCopyWithImpl<$Res, $Val extends Projectile>
           ? _value.weapon
           : weapon // ignore: cast_nullable_to_non_nullable
               as Weapon,
-      friendly: null == friendly
-          ? _value.friendly
-          : friendly // ignore: cast_nullable_to_non_nullable
-              as bool,
+      firedBy: null == firedBy
+          ? _value.firedBy
+          : firedBy // ignore: cast_nullable_to_non_nullable
+              as PlayerType,
     ) as $Val);
   }
 
@@ -92,7 +92,7 @@ abstract class _$$_ProjectileCopyWith<$Res>
       __$$_ProjectileCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({double x, double y, Weapon weapon, bool friendly});
+  $Res call({double x, double y, Weapon weapon, PlayerType firedBy});
 
   @override
   $WeaponCopyWith<$Res> get weapon;
@@ -112,7 +112,7 @@ class __$$_ProjectileCopyWithImpl<$Res>
     Object? x = null,
     Object? y = null,
     Object? weapon = null,
-    Object? friendly = null,
+    Object? firedBy = null,
   }) {
     return _then(_$_Projectile(
       x: null == x
@@ -127,10 +127,10 @@ class __$$_ProjectileCopyWithImpl<$Res>
           ? _value.weapon
           : weapon // ignore: cast_nullable_to_non_nullable
               as Weapon,
-      friendly: null == friendly
-          ? _value.friendly
-          : friendly // ignore: cast_nullable_to_non_nullable
-              as bool,
+      firedBy: null == firedBy
+          ? _value.firedBy
+          : firedBy // ignore: cast_nullable_to_non_nullable
+              as PlayerType,
     ));
   }
 }
@@ -142,7 +142,7 @@ class _$_Projectile implements _Projectile {
       {required this.x,
       required this.y,
       required this.weapon,
-      required this.friendly});
+      required this.firedBy});
 
   @override
   final double x;
@@ -151,11 +151,11 @@ class _$_Projectile implements _Projectile {
   @override
   final Weapon weapon;
   @override
-  final bool friendly;
+  final PlayerType firedBy;
 
   @override
   String toString() {
-    return 'Projectile(x: $x, y: $y, weapon: $weapon, friendly: $friendly)';
+    return 'Projectile(x: $x, y: $y, weapon: $weapon, firedBy: $firedBy)';
   }
 
   @override
@@ -166,12 +166,11 @@ class _$_Projectile implements _Projectile {
             (identical(other.x, x) || other.x == x) &&
             (identical(other.y, y) || other.y == y) &&
             (identical(other.weapon, weapon) || other.weapon == weapon) &&
-            (identical(other.friendly, friendly) ||
-                other.friendly == friendly));
+            (identical(other.firedBy, firedBy) || other.firedBy == firedBy));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, x, y, weapon, friendly);
+  int get hashCode => Object.hash(runtimeType, x, y, weapon, firedBy);
 
   @JsonKey(ignore: true)
   @override
@@ -185,7 +184,7 @@ abstract class _Projectile implements Projectile {
       {required final double x,
       required final double y,
       required final Weapon weapon,
-      required final bool friendly}) = _$_Projectile;
+      required final PlayerType firedBy}) = _$_Projectile;
 
   @override
   double get x;
@@ -194,7 +193,7 @@ abstract class _Projectile implements Projectile {
   @override
   Weapon get weapon;
   @override
-  bool get friendly;
+  PlayerType get firedBy;
   @override
   @JsonKey(ignore: true)
   _$$_ProjectileCopyWith<_$_Projectile> get copyWith =>

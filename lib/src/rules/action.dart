@@ -7,15 +7,36 @@ import 'package:tyrant_engine/src/rules/outcomes.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
 
 abstract class Action {
-  Outcome<Game> perform(Game game, PlayerType player);
+  Outcome<Game> perform(Game game);
+}
+
+class EndTurnAction implements Action {
+  const EndTurnAction(this.ruleEngine);
+
+  final RuleEngine ruleEngine;
+
+  @override
+  Outcome<Game> perform(Game game) {
+    return Outcome.single(game.copyWith(
+      turn: game.turn == PlayerType.firstPlayer
+          ? PlayerType.secondPlayer
+          : PlayerType.firstPlayer,
+      round: game.turn == PlayerType.secondPlayer ? game.round + 1 : game.round,
+      phase: ruleEngine.startingPhase,
+    ));
+  }
 }
 
 class EndPhaseAction implements Action {
-  const EndPhaseAction();
+  const EndPhaseAction(this.nextPhase);
+
+  final Phase nextPhase;
 
   @override
-  Outcome<Game> perform(Game game, PlayerType player) {
-    return Outcome.single(game);
+  Outcome<Game> perform(Game game) {
+    return Outcome.single(game.copyWith(
+      phase: nextPhase,
+    ));
   }
 }
 
@@ -29,22 +50,19 @@ class BurnAction implements Action {
   final int amount;
 
   @override
-  Outcome<Game> perform(Game game, PlayerType pType) {
-    final player = game.playerType(pType);
-    final playerBurned = player.copyWith(
-      ru: player.ru + amount,
-      heat: player.heat + amount,
-      ship: player.ship.copyWith(
-        momentumForward: isLateral
-            ? player.ship.momentumForward
-            : player.ship.momentumForward + amount,
-        momentumLateral: isLateral
-            ? player.ship.momentumLateral + amount
-            : player.ship.momentumLateral,
-      ),
-    );
-
-    return Outcome.single(game.updatePlayer(pType, (_) => playerBurned));
+  Outcome<Game> perform(Game game) {
+    return Outcome.single(game.updateCurrentPlayer((player) => player.copyWith(
+          ru: player.ru + amount,
+          heat: player.heat + amount,
+          ship: player.ship.copyWith(
+            momentumForward: isLateral
+                ? player.ship.momentumForward
+                : player.ship.momentumForward + amount,
+            momentumLateral: isLateral
+                ? player.ship.momentumLateral + amount
+                : player.ship.momentumLateral,
+          ),
+        )));
   }
 }
 
@@ -58,22 +76,25 @@ class PlayWeaponAction implements Action {
   });
 
   @override
-  Outcome<Game> perform(Game game, PlayerType player) {
-    return Outcome.single(game.updatePlayer(
-      player,
-      (player) => player.copyWith(
-        hand: player.hand.toList()..remove(card),
-        ship: player.ship.copyWith(
-          build: player.ship.build.onSlot(
-            slot,
-            (slot) => slot.copyWith(
-              deployCount: slot.deployCount + 1,
-              deployed: card,
+  Outcome<Game> perform(Game game) {
+    return Outcome.single(game
+        .updateCurrentPlayer(
+          (player) => player.copyWith(
+            hand: player.hand.toList()..remove(card),
+            ship: player.ship.copyWith(
+              build: player.ship.build.onSlot(
+                slot,
+                (slot) => slot.copyWith(
+                  deployCount: slot.deployCount + 1,
+                  deployed: card,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-    ));
+        )
+        .copyWith(
+          phase: Phase.shootyShoot,
+        ));
   }
 }
 
@@ -87,27 +108,26 @@ class FireWeaponAction implements Action {
   });
 
   @override
-  Outcome<Game> perform(Game game, PlayerType pType) {
-    final player = game.playerType(pType);
+  Outcome<Game> perform(Game game) {
+    final player = game.currentPlayer;
     final weapon = player.ship.build.slot(slot).deployed!;
-    final weaponTapped = game.updatePlayer(
-        pType,
-        (player) => player.copyWith(
-              ru: player.ru - weapon.ru,
-              heat: player.heat + weapon.heat,
-              ship: player.ship.copyWith(
-                build: player.ship.build.onSlot(
-                  slot,
-                  (slot) => slot.copyWith(
-                    tappedCount: slot.tappedCount + 1,
-                  ),
-                ),
+    final weaponTapped = game.updateCurrentPlayer((player) => player.copyWith(
+          ru: player.ru - weapon.ru,
+          heat: player.heat + weapon.heat,
+          ship: player.ship.copyWith(
+            build: player.ship.build.onSlot(
+              slot,
+              (slot) => slot.copyWith(
+                tappedCount: slot.tappedCount + 1,
               ),
-            ));
+            ),
+          ),
+        ));
 
     if (weapon.speed == null) {
-      final target =
-          pType == PlayerType.player ? PlayerType.enemy : PlayerType.player;
+      final target = game.turn == PlayerType.firstPlayer
+          ? PlayerType.secondPlayer
+          : PlayerType.firstPlayer;
       return ruleEngine.applyDamage(weaponTapped, target, weapon.damage);
     } else {
       return Outcome.single(weaponTapped.copyWith(
@@ -116,7 +136,7 @@ class FireWeaponAction implements Action {
             // TODO: handle half distance on first shooty
             x: player.ship.x.toDouble(),
             y: player.ship.y.toDouble(),
-            friendly: pType == PlayerType.player,
+            firedBy: game.turn,
             weapon: weapon,
           )),
       ));

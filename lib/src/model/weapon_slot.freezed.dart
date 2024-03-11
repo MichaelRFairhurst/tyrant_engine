@@ -37,6 +37,8 @@ abstract class $WeaponSlotCopyWith<$Res> {
       Weapon? deployed,
       int deployCount,
       int tappedCount});
+
+  $WeaponCopyWith<$Res>? get deployed;
 }
 
 /// @nodoc
@@ -53,7 +55,7 @@ class _$WeaponSlotCopyWithImpl<$Res, $Val extends WeaponSlot>
   @override
   $Res call({
     Object? type = null,
-    Object? deployed = null,
+    Object? deployed = freezed,
     Object? deployCount = null,
     Object? tappedCount = null,
   }) {
@@ -62,7 +64,7 @@ class _$WeaponSlotCopyWithImpl<$Res, $Val extends WeaponSlot>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as WeaponSlotType,
-      deployed: null == deployed
+      deployed: freezed == deployed
           ? _value.deployed
           : deployed // ignore: cast_nullable_to_non_nullable
               as Weapon?,
@@ -75,6 +77,18 @@ class _$WeaponSlotCopyWithImpl<$Res, $Val extends WeaponSlot>
           : tappedCount // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $WeaponCopyWith<$Res>? get deployed {
+    if (_value.deployed == null) {
+      return null;
+    }
+
+    return $WeaponCopyWith<$Res>(_value.deployed!, (value) {
+      return _then(_value.copyWith(deployed: value) as $Val);
+    });
   }
 }
 
@@ -91,6 +105,9 @@ abstract class _$$_WeaponSlotCopyWith<$Res>
       Weapon? deployed,
       int deployCount,
       int tappedCount});
+
+  @override
+  $WeaponCopyWith<$Res>? get deployed;
 }
 
 /// @nodoc
@@ -105,7 +122,7 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
   @override
   $Res call({
     Object? type = null,
-    Object? deployed = null,
+    Object? deployed = freezed,
     Object? deployCount = null,
     Object? tappedCount = null,
   }) {
@@ -114,7 +131,7 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as WeaponSlotType,
-      deployed: null == deployed
+      deployed: freezed == deployed
           ? _value.deployed
           : deployed // ignore: cast_nullable_to_non_nullable
               as Weapon?,
@@ -161,7 +178,8 @@ class _$_WeaponSlot implements _WeaponSlot {
         (other.runtimeType == runtimeType &&
             other is _$_WeaponSlot &&
             (identical(other.type, type) || other.type == type) &&
-            const DeepCollectionEquality().equals(other.deployed, deployed) &&
+            (identical(other.deployed, deployed) ||
+                other.deployed == deployed) &&
             (identical(other.deployCount, deployCount) ||
                 other.deployCount == deployCount) &&
             (identical(other.tappedCount, tappedCount) ||
@@ -169,8 +187,8 @@ class _$_WeaponSlot implements _WeaponSlot {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, type,
-      const DeepCollectionEquality().hash(deployed), deployCount, tappedCount);
+  int get hashCode =>
+      Object.hash(runtimeType, type, deployed, deployCount, tappedCount);
 
   @JsonKey(ignore: true)
   @override

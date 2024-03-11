@@ -32,25 +32,6 @@ class RuleEngine {
 
   Phase get startingPhase => Phase.thaw;
 
-  Phase? nextPhase(Phase phase) {
-    switch (phase) {
-      case Phase.thaw:
-        return Phase.draw;
-      case Phase.draw:
-        return Phase.regen;
-      case Phase.regen:
-        return Phase.drift;
-      case Phase.drift:
-        return Phase.burn;
-      case Phase.burn:
-        return Phase.activate;
-      case Phase.activate:
-        return Phase.shootyShoot;
-      case Phase.shootyShoot:
-        return null;
-    }
-  }
-
   Game initializeGame({
     required List<Weapon> playerDeck,
     required ShipBuild playerBuild,
@@ -58,16 +39,19 @@ class RuleEngine {
     required ShipBuild enemyBuild,
   }) {
     return Game(
-      player: Player(
+      firstPlayer: Player(
         ship: initShip(playerBuild, 0),
         hand: [],
         deck: playerDeck,
       ),
-      enemy: Player(
+      secondPlayer: Player(
         ship: initShip(playerBuild, 24),
         hand: [],
         deck: enemyDeck,
       ),
+      turn: PlayerType.firstPlayer,
+      phase: startingPhase,
+      round: 0,
       projectiles: [],
     );
   }
@@ -102,22 +86,19 @@ class RuleEngine {
 
   Outcome<Game> tick({
     required Game game,
-    required PlayerType player,
-    required Phase phase,
-    required int round,
   }) {
-    switch (phase) {
+    switch (game.phase) {
       case Phase.thaw:
-        return thaw(game, player, round);
+        return thaw(game);
 
       case Phase.regen:
-        return regen(game, player);
+        return regen(game);
 
       case Phase.draw:
-        return draw(game, player);
+        return draw(game);
 
       case Phase.drift:
-        return drift(game, player);
+        return drift(game);
 
       case Phase.burn:
       case Phase.activate:
@@ -126,27 +107,29 @@ class RuleEngine {
     }
   }
 
-  Outcome<Game> thaw(Game game, PlayerType player, int round) {
-    int thawIdx = startingCrewCount + round;
+  Outcome<Game> thaw(Game game) {
+    int thawIdx = startingCrewCount + game.round;
     if (thawIdx >= totalCrew) {
       return Outcome<Game>.single(game);
     }
 
-    final crew = game.playerType(player).crew;
+    final crew = game.currentPlayer.crew;
     if (crew[thawIdx] == CrewState.killed) {
       return Outcome<Game>.single(game);
     }
 
-    return Outcome<Game>.single(game.updatePlayer(
-        player,
-        (player) => player.copyWith(
+    return Outcome<Game>.single(game
+        .updateCurrentPlayer((player) => player.copyWith(
               crew: player.crew.toList()
                 ..remove(thawIdx)
                 ..insert(thawIdx, CrewState.active),
-            )));
+            ))
+        .copyWith(
+          phase: Phase.regen,
+        ));
   }
 
-  Outcome<Game> regen(Game game, PlayerType player) {
+  Outcome<Game> regen(Game game) {
     Side untapAll(Side side) => side.copyWith(
           weapons: side.weapons
               .map((slot) => slot.copyWith(
@@ -155,25 +138,28 @@ class RuleEngine {
               .toList(),
         );
 
-    return Outcome<Game>.single(game.updatePlayer(
-      player,
-      (player) => player.copyWith(
-        ru: fullRU,
-        heat: max<int>(0, player.heat - heatRegen),
-        ship: player.ship.copyWith(
-          build: player.ship.build.on(
-            forward: untapAll,
-            aft: untapAll,
-            port: untapAll,
-            starboard: untapAll,
+    return Outcome<Game>.single(game
+        .updateCurrentPlayer(
+          (player) => player.copyWith(
+            ru: fullRU,
+            heat: max<int>(0, player.heat - heatRegen),
+            ship: player.ship.copyWith(
+              build: player.ship.build.on(
+                forward: untapAll,
+                aft: untapAll,
+                port: untapAll,
+                starboard: untapAll,
+              ),
+            ),
           ),
-        ),
-      ),
-    ));
+        )
+        .copyWith(
+          phase: Phase.draw,
+        ));
   }
 
-  Outcome<Game> draw(Game game, PlayerType pType) {
-    final player = game.playerType(pType);
+  Outcome<Game> draw(Game game) {
+    final player = game.currentPlayer;
     final uniqueCards = <Weapon, int>{};
 
     for (final card in player.deck) {
@@ -189,24 +175,27 @@ class RuleEngine {
       randomOutcomes: uniqueCards.entries
           .map((entry) => RandomOutcome<Game>(
                 probability: entry.value / deckSize,
-                result: game.updatePlayer(
-                  pType,
-                  (player) => player.copyWith(
-                    hand: player.hand.toList()..add(entry.key),
-                    deck: player.deck.toList()..remove(entry.key),
-                  ),
-                ),
+                result: game
+                    .updateCurrentPlayer(
+                      (player) => player.copyWith(
+                        hand: player.hand.toList()..add(entry.key),
+                        deck: player.deck.toList()..remove(entry.key),
+                      ),
+                    )
+                    .copyWith(
+                      phase: Phase.drift,
+                    ),
               ))
           .toSet(),
     );
   }
 
-  Outcome<Game> drift(Game game, PlayerType player) {
+  Outcome<Game> drift(Game game) {
     final driftedProjectiles = <Projectile>[];
     final impacts = <Weapon>[];
 
     for (final projectile in game.projectiles) {
-      final drifted = driftProjectile(game, player, projectile);
+      final drifted = driftProjectile(game, projectile);
       if (drifted != null) {
         driftedProjectiles.add(drifted);
       } else {
@@ -215,22 +204,22 @@ class RuleEngine {
     }
 
     final driftsOnly = game
-        .updatePlayer(
-            player,
-            (player) => player.copyWith(
-                  ship: player.ship.copyWith(
-                    x: player.ship.x + player.ship.momentumLateral,
-                    y: player.ship.y + player.ship.momentumForward,
-                  ),
-                ))
+        .updateCurrentPlayer((player) => player.copyWith(
+              ship: player.ship.copyWith(
+                x: player.ship.x + player.ship.momentumLateral,
+                y: player.ship.y + player.ship.momentumForward,
+              ),
+            ))
         .copyWith(
           projectiles: driftedProjectiles,
+          phase: Phase.activate,
         );
 
     var outcome = Outcome.single(driftsOnly);
 
-    final target =
-        player == PlayerType.player ? PlayerType.enemy : PlayerType.player;
+    final target = game.turn == PlayerType.firstPlayer
+        ? PlayerType.secondPlayer
+        : PlayerType.firstPlayer;
     for (final impact in impacts) {
       final newOutcomes = <RandomOutcome<Game>>{};
       for (final state in outcome.randomOutcomes) {
@@ -268,23 +257,17 @@ class RuleEngine {
     }).toSet());
   }
 
-  Projectile? driftProjectile(
-      Game game, PlayerType player, Projectile projectile) {
+  Projectile? driftProjectile(Game game, Projectile projectile) {
     final Ship target;
-    if (projectile.friendly) {
-      target = game.enemy.ship;
+    if (projectile.firedBy != game.turn) {
+      // Don't drift enemy's projectiles on player's turn
+      return projectile;
+    }
 
-      if (player == PlayerType.enemy) {
-        // Don't drift player's projectiles on enemy's turn
-        return projectile;
-      }
+    if (projectile.firedBy == PlayerType.firstPlayer) {
+      target = game.secondPlayer.ship;
     } else {
-      target = game.player.ship;
-
-      if (player == PlayerType.player) {
-        // Don't drift enemy's projectiles on player's turn
-        return projectile;
-      }
+      target = game.firstPlayer.ship;
     }
 
     final distX = target.x - projectile.x;
@@ -305,8 +288,8 @@ class RuleEngine {
     );
   }
 
-  List<Action> playerActions(Game game, PlayerType player, Phase phase) {
-    switch (phase) {
+  List<Action> playerActions(Game game) {
+    switch (game.phase) {
       case Phase.thaw:
       case Phase.regen:
       case Phase.draw:
@@ -314,20 +297,20 @@ class RuleEngine {
         return [];
 
       case Phase.activate:
-        return activateActions(game, player);
+        return activateActions(game);
 
       case Phase.burn:
         // TODO: implement burn
         return [];
 
       case Phase.shootyShoot:
-        return fireWeaponActions(game, player);
+        return fireWeaponActions(game);
     }
   }
 
-  List<PlayWeaponAction> activateActions(Game game, PlayerType pType) {
-    final actions = <PlayWeaponAction>[];
-    final player = game.playerType(pType);
+  List<Action> activateActions(Game game) {
+    final actions = <Action>[const EndPhaseAction(Phase.shootyShoot)];
+    final player = game.currentPlayer;
     final deployables = player.ship.build.slotTypesMap();
     for (final weapon in player.hand) {
       final descriptors = deployables[weapon.type];
@@ -352,11 +335,13 @@ class RuleEngine {
     return actions;
   }
 
-  List<Action> fireWeaponActions(Game game, PlayerType pType) {
-    final actions = <Action>[const EndPhaseAction()];
-    final player = game.playerType(pType);
+  List<Action> fireWeaponActions(Game game) {
+    final actions = <Action>[EndTurnAction(this)];
+    final player = game.currentPlayer;
 
-    final target = identical(game.player, player) ? game.enemy : game.player;
+    final target = game.turn == PlayerType.firstPlayer
+        ? game.secondPlayer
+        : game.firstPlayer;
     final distance = geometry.distance(player.ship, target.ship);
 
     for (final quadrant in Quadrant.values) {

@@ -122,13 +122,13 @@ class _$_WeaponSlotDescriptor implements _WeaponSlotDescriptor {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_WeaponSlotDescriptor &&
-            const DeepCollectionEquality().equals(other.quadrant, quadrant) &&
+            (identical(other.quadrant, quadrant) ||
+                other.quadrant == quadrant) &&
             (identical(other.slotIdx, slotIdx) || other.slotIdx == slotIdx));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(quadrant), slotIdx);
+  int get hashCode => Object.hash(runtimeType, quadrant, slotIdx);
 
   @JsonKey(ignore: true)
   @override

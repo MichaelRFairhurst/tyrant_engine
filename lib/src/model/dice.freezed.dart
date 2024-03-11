@@ -96,8 +96,8 @@ class __$$_DiceCopyWithImpl<$Res> extends _$DiceCopyWithImpl<$Res, _$_Dice>
 
 /// @nodoc
 
-class _$_Dice implements _Dice {
-  const _$_Dice({required this.rolls, required this.sides});
+class _$_Dice extends _Dice {
+  const _$_Dice({required this.rolls, required this.sides}) : super._();
 
   @override
   final int rolls;
@@ -128,9 +128,10 @@ class _$_Dice implements _Dice {
       __$$_DiceCopyWithImpl<_$_Dice>(this, _$identity);
 }
 
-abstract class _Dice implements Dice {
+abstract class _Dice extends Dice {
   const factory _Dice({required final int rolls, required final int sides}) =
       _$_Dice;
+  const _Dice._() : super._();
 
   @override
   int get rolls;

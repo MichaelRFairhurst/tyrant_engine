@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:tyrant_engine/src/algorithm/tree.dart' as minimax;
 import 'package:tyrant_engine/src/cli/printer.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
@@ -9,26 +8,33 @@ import 'package:tyrant_engine/src/rules/outcomes.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
 import 'package:tyrant_engine/src/content/decks.dart' as decks;
 import 'package:tyrant_engine/src/content/ships.dart' as ships;
+import 'package:tyrant_engine/src/strategy/strategy.dart';
 
 class TyrantEngine {
   final ruleEngine = RuleEngine();
   final printer = Printer();
   final random = Random();
 
-  void run(Game game) {
+  void run(Game game, PlayerStrategies strategies) {
     print('----- NEW GAME! ----');
     printer.printGame(game);
     print('');
     print('');
 
     while (true) {
-      game = playerTurn(game);
+      game = playerTurn(game, strategies.player(game.turn));
 
-      if (game.firstPlayer.ship.hp < 1 ||
-          game.secondPlayer.ship.hp < 1 ||
-          game.round == 30) {
+      if (game.firstPlayer.ship.hp < 1) {
         print('----GAME OVER!-----');
         printer.printGame(game);
+        print('----Player 2 Wins!-----');
+        return;
+      }
+
+      if (game.secondPlayer.ship.hp < 1) {
+        print('----GAME OVER!-----');
+        printer.printGame(game);
+        print('----Player 1 Wins!-----');
         return;
       }
 
@@ -40,7 +46,7 @@ class TyrantEngine {
     }
   }
 
-  Game playerTurn(Game game) {
+  Game playerTurn(Game game, Strategy strategy) {
     print('--- NEW TURN: ${game.turn} ----');
     print('');
 
@@ -53,7 +59,7 @@ class TyrantEngine {
       game = pickOutcome(outcomes);
 
       printer.printGame(game);
-      game = performActions(game);
+      game = performActions(game, strategy);
     }
 
     printer.printGame(game);
@@ -61,7 +67,7 @@ class TyrantEngine {
     return game;
   }
 
-  Game performActions(Game game) {
+  Game performActions(Game game, Strategy strategy) {
     late List<Action> actions;
     while (true) {
       actions = ruleEngine.playerActions(game);
@@ -70,7 +76,7 @@ class TyrantEngine {
         break;
       }
 
-      final chosen = pickAction(actions);
+      final chosen = strategy.pickAction(game, actions);
 
       print('[ACTION: $chosen]');
 
@@ -80,46 +86,17 @@ class TyrantEngine {
     return game;
   }
 
-  minimax.Branch<Game> gameToBranch(Game game) {
-    // TODO: fix
-    return decisionBranch(game);
-  }
-
-  minimax.Branch<Game> outcomeToBranch(Game game, Outcome<Game> outcome) {
-    return minimax.ExpectedValueBranch<Game>(
-        game,
-        outcome.randomOutcomes
-            .map((o) => minimax.Possibility<Game>(
-                  o.probability,
-                  gameToBranch(o.result),
-                ))
-            .toList());
-  }
-
-  minimax.Branch<Game> decisionBranch(Game game) {
-    final actions = ruleEngine.playerActions(game);
-
-    if (actions.isEmpty) {
-      return minimax.DecisionBranch<Action, Game>(game, {}, true);
+  Game pickOutcome(Outcome<Game> outcomes) {
+    if (outcomes.randomOutcomes.length == 1) {
+      return outcomes.randomOutcomes.single.result;
     }
 
-    return minimax.DecisionBranch<Action, Game>(
-        game,
-        Map<Action, minimax.Branch<Game> Function()>.fromEntries(actions.map(
-            (a) => MapEntry(a, () => outcomeToBranch(game, a.perform(game))))),
-        true);
-  }
+    final outcome = outcomes.randomOutcomes
+        .toList()[random.nextInt(outcomes.randomOutcomes.length)];
 
-  Game pickOutcome(Outcome<Game> outcomes) {
-    // TODO: pick better ...
-    return outcomes.randomOutcomes
-        .toList()[random.nextInt(outcomes.randomOutcomes.length)]
-        .result;
-  }
-
-  Action pickAction(List<Action> actions) {
-    // TODO: pick better ...
-    return actions[random.nextInt(actions.length)];
+    print('[Random outcome: ${outcome.explanation}]');
+    print('');
+    return outcome.result;
   }
 
   Game defaultGame() {

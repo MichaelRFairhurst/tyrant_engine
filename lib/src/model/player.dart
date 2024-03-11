@@ -26,6 +26,8 @@ const startingCrew = [
 
 @freezed
 class Player with _$Player {
+  const Player._();
+
   const factory Player({
     @Default(10) int ru,
     @Default(0) int heat,
@@ -34,4 +36,6 @@ class Player with _$Player {
     required List<Weapon> hand,
     required List<Weapon> deck,
   }) = _Player;
+
+  int get activeCrew => crew.where((c) => c == CrewState.active).length;
 }

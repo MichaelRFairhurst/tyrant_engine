@@ -31,8 +31,12 @@ const r4d20 = Dice(rolls: 4, sides: 20);
 
 @freezed
 class Dice with _$Dice {
+  const Dice._();
+
   const factory Dice({
     required int rolls,
     required int sides,
   }) = _Dice;
+
+  double get expectedValue => rolls * (sides + 1) / 2;
 }

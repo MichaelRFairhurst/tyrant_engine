@@ -166,7 +166,7 @@ class __$$_PlayerCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$_Player implements _Player {
+class _$_Player extends _Player {
   const _$_Player(
       {this.ru = 10,
       this.heat = 0,
@@ -176,7 +176,8 @@ class _$_Player implements _Player {
       required final List<Weapon> deck})
       : _crew = crew,
         _hand = hand,
-        _deck = deck;
+        _deck = deck,
+        super._();
 
   @override
   @JsonKey()
@@ -243,7 +244,7 @@ class _$_Player implements _Player {
       __$$_PlayerCopyWithImpl<_$_Player>(this, _$identity);
 }
 
-abstract class _Player implements Player {
+abstract class _Player extends Player {
   const factory _Player(
       {final int ru,
       final int heat,
@@ -251,6 +252,7 @@ abstract class _Player implements Player {
       required final Ship ship,
       required final List<Weapon> hand,
       required final List<Weapon> deck}) = _$_Player;
+  const _Player._() : super._();
 
   @override
   int get ru;

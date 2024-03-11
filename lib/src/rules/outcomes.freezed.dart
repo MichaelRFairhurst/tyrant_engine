@@ -141,6 +141,7 @@ abstract class _Outcome<T> implements Outcome<T> {
 
 /// @nodoc
 mixin _$RandomOutcome<T> {
+  String get explanation => throw _privateConstructorUsedError;
   double get probability => throw _privateConstructorUsedError;
   T get result => throw _privateConstructorUsedError;
 
@@ -155,7 +156,7 @@ abstract class $RandomOutcomeCopyWith<T, $Res> {
           RandomOutcome<T> value, $Res Function(RandomOutcome<T>) then) =
       _$RandomOutcomeCopyWithImpl<T, $Res, RandomOutcome<T>>;
   @useResult
-  $Res call({double probability, T result});
+  $Res call({String explanation, double probability, T result});
 }
 
 /// @nodoc
@@ -171,10 +172,15 @@ class _$RandomOutcomeCopyWithImpl<T, $Res, $Val extends RandomOutcome<T>>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? explanation = null,
     Object? probability = null,
     Object? result = null,
   }) {
     return _then(_value.copyWith(
+      explanation: null == explanation
+          ? _value.explanation
+          : explanation // ignore: cast_nullable_to_non_nullable
+              as String,
       probability: null == probability
           ? _value.probability
           : probability // ignore: cast_nullable_to_non_nullable
@@ -195,7 +201,7 @@ abstract class _$$_RandomOutcomeCopyWith<T, $Res>
       __$$_RandomOutcomeCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call({double probability, T result});
+  $Res call({String explanation, double probability, T result});
 }
 
 /// @nodoc
@@ -209,10 +215,15 @@ class __$$_RandomOutcomeCopyWithImpl<T, $Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? explanation = null,
     Object? probability = null,
     Object? result = null,
   }) {
     return _then(_$_RandomOutcome<T>(
+      explanation: null == explanation
+          ? _value.explanation
+          : explanation // ignore: cast_nullable_to_non_nullable
+              as String,
       probability: null == probability
           ? _value.probability
           : probability // ignore: cast_nullable_to_non_nullable
@@ -228,8 +239,13 @@ class __$$_RandomOutcomeCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$_RandomOutcome<T> implements _RandomOutcome<T> {
-  const _$_RandomOutcome({required this.probability, required this.result});
+  const _$_RandomOutcome(
+      {required this.explanation,
+      required this.probability,
+      required this.result});
 
+  @override
+  final String explanation;
   @override
   final double probability;
   @override
@@ -237,7 +253,7 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
 
   @override
   String toString() {
-    return 'RandomOutcome<$T>(probability: $probability, result: $result)';
+    return 'RandomOutcome<$T>(explanation: $explanation, probability: $probability, result: $result)';
   }
 
   @override
@@ -245,14 +261,16 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_RandomOutcome<T> &&
+            (identical(other.explanation, explanation) ||
+                other.explanation == explanation) &&
             (identical(other.probability, probability) ||
                 other.probability == probability) &&
             const DeepCollectionEquality().equals(other.result, result));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, probability, const DeepCollectionEquality().hash(result));
+  int get hashCode => Object.hash(runtimeType, explanation, probability,
+      const DeepCollectionEquality().hash(result));
 
   @JsonKey(ignore: true)
   @override
@@ -263,9 +281,12 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
 
 abstract class _RandomOutcome<T> implements RandomOutcome<T> {
   const factory _RandomOutcome(
-      {required final double probability,
+      {required final String explanation,
+      required final double probability,
       required final T result}) = _$_RandomOutcome<T>;
 
+  @override
+  String get explanation;
   @override
   double get probability;
   @override

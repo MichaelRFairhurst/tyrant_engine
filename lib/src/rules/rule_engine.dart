@@ -172,6 +172,7 @@ class RuleEngine {
     return Outcome<Game>(
       randomOutcomes: uniqueCards.entries
           .map((entry) => RandomOutcome<Game>(
+                explanation: '${game.turn} draws ${entry.key.name}',
                 probability: entry.value / deckSize,
                 result: game
                     .updateCurrentPlayer(
@@ -225,6 +226,7 @@ class RuleEngine {
 
         for (final dmgState in dmgStates.randomOutcomes) {
           newOutcomes.add(RandomOutcome<Game>(
+            explanation: dmgState.explanation + ', ' + state.explanation,
             probability: dmgState.probability * state.probability,
             result: dmgState.result,
           ));
@@ -249,6 +251,7 @@ class RuleEngine {
       );
 
       return RandomOutcome<Game>(
+        explanation: '$target takes $result damage',
         probability: p,
         result: game.updatePlayer(target, (player) => damaged),
       );
@@ -356,6 +359,10 @@ class RuleEngine {
 
         final range = weapon.range;
         if (range != null && distance > range) {
+          continue;
+        }
+
+        if (weapon.ru > player.activeCrew) {
           continue;
         }
 

@@ -215,7 +215,7 @@ class _$_Game extends _Game {
         (other.runtimeType == runtimeType &&
             other is _$_Game &&
             (identical(other.round, round) || other.round == round) &&
-            const DeepCollectionEquality().equals(other.phase, phase) &&
+            (identical(other.phase, phase) || other.phase == phase) &&
             (identical(other.turn, turn) || other.turn == turn) &&
             (identical(other.firstPlayer, firstPlayer) ||
                 other.firstPlayer == firstPlayer) &&
@@ -226,14 +226,8 @@ class _$_Game extends _Game {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      round,
-      const DeepCollectionEquality().hash(phase),
-      turn,
-      firstPlayer,
-      secondPlayer,
-      const DeepCollectionEquality().hash(_projectiles));
+  int get hashCode => Object.hash(runtimeType, round, phase, turn, firstPlayer,
+      secondPlayer, const DeepCollectionEquality().hash(_projectiles));
 
   @JsonKey(ignore: true)
   @override

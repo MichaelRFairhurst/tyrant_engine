@@ -23,7 +23,7 @@ class DiceSums {
 
   // TODO: use actual statistics to calculate this in fewer steps...
   _recursiveCompute(int sides, int rolls, int baseline, Map<int, int> table) {
-    for (int i = 0; i < sides; ++i) {
+    for (int i = 1; i <= sides; ++i) {
       final sum = i + baseline;
       if (rolls == 1) {
         if (table.containsKey(sum)) {

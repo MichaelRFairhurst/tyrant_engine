@@ -63,7 +63,7 @@ class Printer {
     print('|| PLAYER: $type');
     print('|| ru: ${player.ru}');
     print('|| heat: ${player.heat}');
-    print('|| hand: ${player.hand.map((weapon) => weapon.name).toList()}');
+    print('|| hand: ${player.hand}');
     print('|| crew: $crewStr');
     print('');
   }

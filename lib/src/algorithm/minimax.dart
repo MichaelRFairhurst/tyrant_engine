@@ -16,8 +16,9 @@ class Minimax<A, T> {
     count = 0;
 
     for (final entry in root.actions.entries) {
-      final score = scoreOf(entry.value(), maxDepth - 1, untilTurn);
-      print('RANKING ${entry.key}: $score');
+      final score = scoreOf(entry.value(), double.negativeInfinity,
+          double.infinity, maxDepth - 1, untilTurn);
+      //print('RANKING ${entry.key}: $score');
       if (score > bestScore) {
         bestAction = entry.key;
         bestScore = score;
@@ -26,18 +27,19 @@ class Minimax<A, T> {
 
     print('$count COMBINATIONS');
     if (count > 1000) {
-      print('PATHOLOGICAL');
-      print('${(root.value as dynamic).phase}');
-      Printer().printGame(root.value as dynamic);
+      //print('PATHOLOGICAL');
+      //print('${(root.value as dynamic).phase}');
+      //Printer().printGame(root.value as dynamic);
     }
     return bestAction!;
   }
 
-  double scoreOf(Branch<T> branch, int maxDepth, int untilTurn) {
+  double scoreOf(Branch<T> branch, double alpha, double beta, int maxDepth,
+      int untilTurn) {
     if (maxDepth == 0 || branch.turn == untilTurn) {
       count++;
 
-      if (count % 1000 == 0) {
+      if (count % 1000000 == 0) {
         print('COUNT $count');
       }
       return scorer.score(branch.value);
@@ -48,16 +50,30 @@ class Minimax<A, T> {
       var score = branch.isMaxing ? double.negativeInfinity : double.infinity;
 
       if (branch.actions.length == 1) {
-        return scoreOf(
-            branch.actions.entries.single.value(), maxDepth, untilTurn);
+        return scoreOf(branch.actions.entries.single.value(), alpha, beta,
+            maxDepth, untilTurn);
       }
 
       for (final entry in branch.actions.entries) {
-        print('$spacer considering subaction ${entry.key}');
+        //print('$spacer considering subaction ${entry.key}');
         if (branch.isMaxing) {
-          score = max(score, scoreOf(entry.value(), maxDepth - 1, untilTurn));
+          final value =
+              scoreOf(entry.value(), alpha, beta, maxDepth - 1, untilTurn);
+          score = max(score, value);
+          if (score >= beta) {
+            //print('Beta pruning ${entry.key}');
+            break;
+          }
+          alpha = max(alpha, value);
         } else {
-          score = min(score, scoreOf(entry.value(), maxDepth - 1, untilTurn));
+          final value =
+              scoreOf(entry.value(), alpha, beta, maxDepth - 1, untilTurn);
+          score = min(score, value);
+          if (score <= alpha) {
+            //print('Alpha pruning ${entry.key}');
+            break;
+          }
+          beta = min(beta, value);
         }
       }
 
@@ -66,14 +82,17 @@ class Minimax<A, T> {
 
     if (branch is ExpectedValueBranch<T>) {
       if (branch.possibilities.length == 1) {
-        return scoreOf(branch.possibilities.single.result, maxDepth, untilTurn);
+        return scoreOf(branch.possibilities.single.result, alpha, beta,
+            maxDepth, untilTurn);
       }
 
-      print('$spacer avging expected value ${branch.possibilities.length}');
+      //print('$spacer avging expected value ${branch.possibilities.length}');
       return branch.possibilities.fold<double>(
           0.0,
           (sum, p) =>
-              sum + p.probability * scoreOf(p.result, maxDepth - 1, untilTurn));
+              sum +
+              p.probability *
+                  scoreOf(p.result, alpha, beta, maxDepth - 1, untilTurn));
     }
 
     throw 'unexpected branch $branch';

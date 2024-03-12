@@ -82,18 +82,17 @@ class PlayWeaponAction implements Action {
   Outcome<Game> perform(Game game) {
     return Outcome.single(game
         .updateCurrentPlayer(
-          (player) => player.copyWith(
-            hand: player.hand.toList()..remove(card),
-            ship: player.ship.copyWith(
-              build: player.ship.build.onSlot(
-                slot,
-                (slot) => slot.copyWith(
-                  deployCount: slot.deployCount + 1,
-                  deployed: card,
+          (player) => player.playFromHand(card).copyWith(
+                ship: player.ship.copyWith(
+                  build: player.ship.build.onSlot(
+                    slot,
+                    (slot) => slot.copyWith(
+                      deployCount: slot.deployCount + 1,
+                      deployed: card,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
         )
         .copyWith(
           phase: Phase.shootyShoot,

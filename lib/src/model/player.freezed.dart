@@ -20,8 +20,8 @@ mixin _$Player {
   int get heat => throw _privateConstructorUsedError;
   List<CrewState> get crew => throw _privateConstructorUsedError;
   Ship get ship => throw _privateConstructorUsedError;
-  List<Weapon> get hand => throw _privateConstructorUsedError;
-  List<Weapon> get deck => throw _privateConstructorUsedError;
+  Deck get hand => throw _privateConstructorUsedError;
+  Deck get deck => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $PlayerCopyWith<Player> get copyWith => throw _privateConstructorUsedError;
@@ -37,8 +37,8 @@ abstract class $PlayerCopyWith<$Res> {
       int heat,
       List<CrewState> crew,
       Ship ship,
-      List<Weapon> hand,
-      List<Weapon> deck});
+      Deck hand,
+      Deck deck});
 
   $ShipCopyWith<$Res> get ship;
 }
@@ -83,11 +83,11 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
       hand: null == hand
           ? _value.hand
           : hand // ignore: cast_nullable_to_non_nullable
-              as List<Weapon>,
+              as Deck,
       deck: null == deck
           ? _value.deck
           : deck // ignore: cast_nullable_to_non_nullable
-              as List<Weapon>,
+              as Deck,
     ) as $Val);
   }
 
@@ -111,8 +111,8 @@ abstract class _$$_PlayerCopyWith<$Res> implements $PlayerCopyWith<$Res> {
       int heat,
       List<CrewState> crew,
       Ship ship,
-      List<Weapon> hand,
-      List<Weapon> deck});
+      Deck hand,
+      Deck deck});
 
   @override
   $ShipCopyWith<$Res> get ship;
@@ -153,13 +153,13 @@ class __$$_PlayerCopyWithImpl<$Res>
           : ship // ignore: cast_nullable_to_non_nullable
               as Ship,
       hand: null == hand
-          ? _value._hand
+          ? _value.hand
           : hand // ignore: cast_nullable_to_non_nullable
-              as List<Weapon>,
+              as Deck,
       deck: null == deck
-          ? _value._deck
+          ? _value.deck
           : deck // ignore: cast_nullable_to_non_nullable
-              as List<Weapon>,
+              as Deck,
     ));
   }
 }
@@ -172,11 +172,9 @@ class _$_Player extends _Player {
       this.heat = 0,
       final List<CrewState> crew = startingCrew,
       required this.ship,
-      required final List<Weapon> hand,
-      required final List<Weapon> deck})
+      required this.hand,
+      required this.deck})
       : _crew = crew,
-        _hand = hand,
-        _deck = deck,
         super._();
 
   @override
@@ -195,19 +193,10 @@ class _$_Player extends _Player {
 
   @override
   final Ship ship;
-  final List<Weapon> _hand;
   @override
-  List<Weapon> get hand {
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_hand);
-  }
-
-  final List<Weapon> _deck;
+  final Deck hand;
   @override
-  List<Weapon> get deck {
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_deck);
-  }
+  final Deck deck;
 
   @override
   String toString() {
@@ -223,19 +212,13 @@ class _$_Player extends _Player {
             (identical(other.heat, heat) || other.heat == heat) &&
             const DeepCollectionEquality().equals(other._crew, _crew) &&
             (identical(other.ship, ship) || other.ship == ship) &&
-            const DeepCollectionEquality().equals(other._hand, _hand) &&
-            const DeepCollectionEquality().equals(other._deck, _deck));
+            (identical(other.hand, hand) || other.hand == hand) &&
+            (identical(other.deck, deck) || other.deck == deck));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      ru,
-      heat,
-      const DeepCollectionEquality().hash(_crew),
-      ship,
-      const DeepCollectionEquality().hash(_hand),
-      const DeepCollectionEquality().hash(_deck));
+  int get hashCode => Object.hash(runtimeType, ru, heat,
+      const DeepCollectionEquality().hash(_crew), ship, hand, deck);
 
   @JsonKey(ignore: true)
   @override
@@ -250,8 +233,8 @@ abstract class _Player extends Player {
       final int heat,
       final List<CrewState> crew,
       required final Ship ship,
-      required final List<Weapon> hand,
-      required final List<Weapon> deck}) = _$_Player;
+      required final Deck hand,
+      required final Deck deck}) = _$_Player;
   const _Player._() : super._();
 
   @override
@@ -263,9 +246,9 @@ abstract class _Player extends Player {
   @override
   Ship get ship;
   @override
-  List<Weapon> get hand;
+  Deck get hand;
   @override
-  List<Weapon> get deck;
+  Deck get deck;
   @override
   @JsonKey(ignore: true)
   _$$_PlayerCopyWith<_$_Player> get copyWith =>

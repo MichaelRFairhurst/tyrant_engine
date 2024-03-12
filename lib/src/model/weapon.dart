@@ -6,6 +6,8 @@ part 'weapon.freezed.dart';
 
 @freezed
 class Weapon with _$Weapon {
+  const Weapon._();
+
   const factory Weapon({
     required String name,
     required WeaponSlotType type,
@@ -21,4 +23,10 @@ class Weapon with _$Weapon {
     int? speed,
     @Default(0) int gyro,
   }) = _Weapon;
+
+  @override
+  int get hashCode => name.hashCode;
+
+  @override
+  bool operator ==(Object? other) => other is Weapon && other.name == this.name;
 }

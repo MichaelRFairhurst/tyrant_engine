@@ -96,7 +96,7 @@ class TyrantEngine {
     final outcome = outcomes.randomOutcomes
         .toList()[random.nextInt(outcomes.randomOutcomes.length)];
 
-    print('[Random outcome: ${outcome.explanation}]');
+    print('[Random outcome: ${outcome.explanation()}]');
     print('');
     return outcome.result;
   }

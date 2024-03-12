@@ -27,7 +27,7 @@ class HpDifferentialScorer implements Scorer<Game> {
     final hpScore = (maxingPlayer.ship.hp - minningPlayer.ship.hp) * 1000.0;
 
     // We will have to discard something (even though....that's not coded...)
-    final discardScore = max(0, (maxingPlayer.hand.length - 7)) * -4000.0;
+    final discardScore = max(0, (maxingPlayer.hand.size - 7)) * -4000.0;
 
     final dmgEnRouteScore = game.projectiles.fold<double>(0.0, (sum, p) {
       final dmg = p.weapon.damage.expectedValue;

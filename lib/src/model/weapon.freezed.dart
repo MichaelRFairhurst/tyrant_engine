@@ -257,7 +257,7 @@ class __$$_WeaponCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$_Weapon implements _Weapon {
+class _$_Weapon extends _Weapon {
   const _$_Weapon(
       {required this.name,
       required this.type,
@@ -271,7 +271,8 @@ class _$_Weapon implements _Weapon {
       required this.crewBonus,
       this.range,
       this.speed,
-      this.gyro = 0});
+      this.gyro = 0})
+      : super._();
 
   @override
   final String name;
@@ -306,34 +307,6 @@ class _$_Weapon implements _Weapon {
     return 'Weapon(name: $name, type: $type, damage: $damage, ru: $ru, heat: $heat, oht: $oht, shieldBonus: $shieldBonus, armorBonus: $armorBonus, hullBonus: $hullBonus, crewBonus: $crewBonus, range: $range, speed: $speed, gyro: $gyro)';
   }
 
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$_Weapon &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.damage, damage) || other.damage == damage) &&
-            (identical(other.ru, ru) || other.ru == ru) &&
-            (identical(other.heat, heat) || other.heat == heat) &&
-            (identical(other.oht, oht) || other.oht == oht) &&
-            (identical(other.shieldBonus, shieldBonus) ||
-                other.shieldBonus == shieldBonus) &&
-            (identical(other.armorBonus, armorBonus) ||
-                other.armorBonus == armorBonus) &&
-            (identical(other.hullBonus, hullBonus) ||
-                other.hullBonus == hullBonus) &&
-            (identical(other.crewBonus, crewBonus) ||
-                other.crewBonus == crewBonus) &&
-            (identical(other.range, range) || other.range == range) &&
-            (identical(other.speed, speed) || other.speed == speed) &&
-            (identical(other.gyro, gyro) || other.gyro == gyro));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, name, type, damage, ru, heat,
-      oht, shieldBonus, armorBonus, hullBonus, crewBonus, range, speed, gyro);
-
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
@@ -341,7 +314,7 @@ class _$_Weapon implements _Weapon {
       __$$_WeaponCopyWithImpl<_$_Weapon>(this, _$identity);
 }
 
-abstract class _Weapon implements Weapon {
+abstract class _Weapon extends Weapon {
   const factory _Weapon(
       {required final String name,
       required final WeaponSlotType type,
@@ -356,6 +329,7 @@ abstract class _Weapon implements Weapon {
       final int? range,
       final int? speed,
       final int gyro}) = _$_Weapon;
+  const _Weapon._() : super._();
 
   @override
   String get name;

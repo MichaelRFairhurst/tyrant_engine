@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tyrant_engine/src/algorithm/deck_cache.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
 
@@ -33,9 +34,18 @@ class Player with _$Player {
     @Default(0) int heat,
     @Default(startingCrew) List<CrewState> crew,
     required Ship ship,
-    required List<Weapon> hand,
-    required List<Weapon> deck,
+    required Deck hand,
+    required Deck deck,
   }) = _Player;
 
   int get activeCrew => crew.where((c) => c == CrewState.active).length;
+
+  Player dealCard(Weapon weapon) => copyWith(
+        hand: hand.add(weapon),
+        deck: deck.remove(weapon),
+      );
+
+  Player playFromHand(Weapon weapon) => copyWith(
+        hand: hand.remove(weapon),
+      );
 }

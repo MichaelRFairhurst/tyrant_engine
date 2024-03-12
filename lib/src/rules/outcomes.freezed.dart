@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Outcome<T> {
-  List<RandomOutcome<T>> get randomOutcomes =>
+  Iterable<RandomOutcome<T>> get randomOutcomes =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -29,7 +29,7 @@ abstract class $OutcomeCopyWith<T, $Res> {
   factory $OutcomeCopyWith(Outcome<T> value, $Res Function(Outcome<T>) then) =
       _$OutcomeCopyWithImpl<T, $Res, Outcome<T>>;
   @useResult
-  $Res call({List<RandomOutcome<T>> randomOutcomes});
+  $Res call({Iterable<RandomOutcome<T>> randomOutcomes});
 }
 
 /// @nodoc
@@ -51,7 +51,7 @@ class _$OutcomeCopyWithImpl<T, $Res, $Val extends Outcome<T>>
       randomOutcomes: null == randomOutcomes
           ? _value.randomOutcomes
           : randomOutcomes // ignore: cast_nullable_to_non_nullable
-              as List<RandomOutcome<T>>,
+              as Iterable<RandomOutcome<T>>,
     ) as $Val);
   }
 }
@@ -64,7 +64,7 @@ abstract class _$$_OutcomeCopyWith<T, $Res>
       __$$_OutcomeCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call({List<RandomOutcome<T>> randomOutcomes});
+  $Res call({Iterable<RandomOutcome<T>> randomOutcomes});
 }
 
 /// @nodoc
@@ -82,9 +82,9 @@ class __$$_OutcomeCopyWithImpl<T, $Res>
   }) {
     return _then(_$_Outcome<T>(
       randomOutcomes: null == randomOutcomes
-          ? _value._randomOutcomes
+          ? _value.randomOutcomes
           : randomOutcomes // ignore: cast_nullable_to_non_nullable
-              as List<RandomOutcome<T>>,
+              as Iterable<RandomOutcome<T>>,
     ));
   }
 }
@@ -92,15 +92,10 @@ class __$$_OutcomeCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$_Outcome<T> implements _Outcome<T> {
-  const _$_Outcome({required final List<RandomOutcome<T>> randomOutcomes})
-      : _randomOutcomes = randomOutcomes;
+  const _$_Outcome({required this.randomOutcomes});
 
-  final List<RandomOutcome<T>> _randomOutcomes;
   @override
-  List<RandomOutcome<T>> get randomOutcomes {
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_randomOutcomes);
-  }
+  final Iterable<RandomOutcome<T>> randomOutcomes;
 
   @override
   String toString() {
@@ -113,12 +108,12 @@ class _$_Outcome<T> implements _Outcome<T> {
         (other.runtimeType == runtimeType &&
             other is _$_Outcome<T> &&
             const DeepCollectionEquality()
-                .equals(other._randomOutcomes, _randomOutcomes));
+                .equals(other.randomOutcomes, randomOutcomes));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_randomOutcomes));
+      runtimeType, const DeepCollectionEquality().hash(randomOutcomes));
 
   @JsonKey(ignore: true)
   @override
@@ -129,10 +124,11 @@ class _$_Outcome<T> implements _Outcome<T> {
 
 abstract class _Outcome<T> implements Outcome<T> {
   const factory _Outcome(
-      {required final List<RandomOutcome<T>> randomOutcomes}) = _$_Outcome<T>;
+          {required final Iterable<RandomOutcome<T>> randomOutcomes}) =
+      _$_Outcome<T>;
 
   @override
-  List<RandomOutcome<T>> get randomOutcomes;
+  Iterable<RandomOutcome<T>> get randomOutcomes;
   @override
   @JsonKey(ignore: true)
   _$$_OutcomeCopyWith<T, _$_Outcome<T>> get copyWith =>
@@ -141,7 +137,7 @@ abstract class _Outcome<T> implements Outcome<T> {
 
 /// @nodoc
 mixin _$RandomOutcome<T> {
-  String get explanation => throw _privateConstructorUsedError;
+  String Function() get explanation => throw _privateConstructorUsedError;
   double get probability => throw _privateConstructorUsedError;
   T get result => throw _privateConstructorUsedError;
 
@@ -156,7 +152,7 @@ abstract class $RandomOutcomeCopyWith<T, $Res> {
           RandomOutcome<T> value, $Res Function(RandomOutcome<T>) then) =
       _$RandomOutcomeCopyWithImpl<T, $Res, RandomOutcome<T>>;
   @useResult
-  $Res call({String explanation, double probability, T result});
+  $Res call({String Function() explanation, double probability, T result});
 }
 
 /// @nodoc
@@ -180,7 +176,7 @@ class _$RandomOutcomeCopyWithImpl<T, $Res, $Val extends RandomOutcome<T>>
       explanation: null == explanation
           ? _value.explanation
           : explanation // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String Function(),
       probability: null == probability
           ? _value.probability
           : probability // ignore: cast_nullable_to_non_nullable
@@ -201,7 +197,7 @@ abstract class _$$_RandomOutcomeCopyWith<T, $Res>
       __$$_RandomOutcomeCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call({String explanation, double probability, T result});
+  $Res call({String Function() explanation, double probability, T result});
 }
 
 /// @nodoc
@@ -223,7 +219,7 @@ class __$$_RandomOutcomeCopyWithImpl<T, $Res>
       explanation: null == explanation
           ? _value.explanation
           : explanation // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String Function(),
       probability: null == probability
           ? _value.probability
           : probability // ignore: cast_nullable_to_non_nullable
@@ -245,7 +241,7 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
       required this.result});
 
   @override
-  final String explanation;
+  final String Function() explanation;
   @override
   final double probability;
   @override
@@ -281,12 +277,12 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
 
 abstract class _RandomOutcome<T> implements RandomOutcome<T> {
   const factory _RandomOutcome(
-      {required final String explanation,
+      {required final String Function() explanation,
       required final double probability,
       required final T result}) = _$_RandomOutcome<T>;
 
   @override
-  String get explanation;
+  String Function() get explanation;
   @override
   double get probability;
   @override

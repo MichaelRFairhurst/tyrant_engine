@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:tyrant_engine/src/algorithm/deck_cache.dart';
 import 'package:tyrant_engine/src/algorithm/dice_sums.dart';
 import 'package:tyrant_engine/src/model/dice.dart';
 import 'package:tyrant_engine/src/model/game.dart';
@@ -39,21 +40,44 @@ class RuleEngine {
     required ShipBuild enemyBuild,
   }) {
     return Game(
-      firstPlayer: dealStart(Player(
-        ship: initShip(playerBuild, 0),
-        hand: [],
-        deck: playerDeck,
-      )),
-      secondPlayer: dealStart(Player(
-        ship: initShip(playerBuild, 24),
-        hand: [],
-        deck: enemyDeck,
-      )),
+      firstPlayer: dealStart(
+          Player(
+            ship: initShip(playerBuild, 0),
+            hand: emptyHand(),
+            deck: deckFromList(playerDeck),
+          ),
+          playerDeck),
+      secondPlayer: dealStart(
+          Player(
+            ship: initShip(playerBuild, 24),
+            hand: emptyHand(),
+            deck: deckFromList(enemyDeck),
+          ),
+          enemyDeck),
       turn: PlayerType.firstPlayer,
       phase: startingPhase,
       round: 0,
       projectiles: [],
     );
+  }
+
+  Deck emptyHand() {
+    final idSystem = DeckIdSystem();
+    return idSystem.zero({});
+  }
+
+  Deck deckFromList(List<Weapon> list) {
+    final countMap = <Weapon, int>{};
+    for (final card in list) {
+      if (countMap.containsKey(card)) {
+        countMap[card] = countMap[card]! + 1;
+      } else {
+        countMap[card] = 1;
+      }
+    }
+
+    final idSystem = DeckIdSystem();
+    return idSystem.zero(countMap);
   }
 
   Ship initShip(ShipBuild build, int x) {
@@ -67,21 +91,16 @@ class RuleEngine {
     );
   }
 
-  Player dealStart(Player player) {
+  Player dealStart(Player player, List<Weapon> deck) {
+    deck = deck.toList();
     for (int i = 0; i < 7; ++i) {
-      player = deal(player);
+      final cardIdx = random.nextInt(deck.length);
+      final card = deck[cardIdx];
+      player = player.dealCard(card);
+      deck.removeAt(cardIdx);
     }
 
     return player;
-  }
-
-  Player deal(Player player) {
-    final cardIdx = random.nextInt(player.deck.length);
-    final card = player.deck[cardIdx];
-    return player.copyWith(
-      deck: player.deck.toList()..removeAt(cardIdx),
-      hand: player.hand.toList()..add(card),
-    );
   }
 
   Outcome<Game> tick({
@@ -158,35 +177,20 @@ class RuleEngine {
 
   Outcome<Game> draw(Game game) {
     final player = game.currentPlayer;
-    final uniqueCards = <Weapon, int>{};
 
-    for (final card in player.deck) {
-      if (uniqueCards.containsKey(card)) {
-        uniqueCards[card] = uniqueCards[card]! + 1;
-      } else {
-        uniqueCards[card] = 1;
-      }
-    }
-
-    final deckSize = player.deck.length;
+    final deckSize = player.deck.size;
     return Outcome<Game>(
-      randomOutcomes: uniqueCards.entries
-          .map((entry) => RandomOutcome<Game>(
-                explanation: '${game.turn} draws ${entry.key.name}',
-                probability: entry.value / deckSize,
-                result: game
-                    .updateCurrentPlayer(
-                      (player) => player.copyWith(
-                        hand: player.hand.toList()..add(entry.key),
-                        deck: player.deck.toList()..remove(entry.key),
-                      ),
-                    )
-                    .copyWith(
-                      phase: Phase.drift,
-                    ),
-              ))
-          .toList(),
-    );
+        randomOutcomes: player.deck.map((card, count) => RandomOutcome<Game>(
+              explanation: () => '${game.turn} draws ${card.name}',
+              probability: count / deckSize,
+              result: game
+                  .updateCurrentPlayer(
+                    (player) => player.dealCard(card),
+                  )
+                  .copyWith(
+                    phase: Phase.drift,
+                  ),
+            )));
   }
 
   Outcome<Game> drift(Game game) {
@@ -226,7 +230,8 @@ class RuleEngine {
 
         for (final dmgState in dmgStates.randomOutcomes) {
           newOutcomes.add(RandomOutcome<Game>(
-            explanation: dmgState.explanation + ', ' + state.explanation,
+            explanation: () =>
+                dmgState.explanation() + ', ' + state.explanation(),
             probability: dmgState.probability * state.probability,
             result: dmgState.result,
           ));
@@ -251,7 +256,7 @@ class RuleEngine {
       );
 
       return RandomOutcome<Game>(
-        explanation: '$target takes $result damage',
+        explanation: () => '$target takes $result damage',
         probability: p,
         result: game.updatePlayer(target, (player) => damaged),
       );
@@ -314,7 +319,7 @@ class RuleEngine {
     final actions = <Action>[const EndPhaseAction(Phase.shootyShoot)];
     final player = game.currentPlayer;
     final deployables = player.ship.build.slotTypesMap();
-    for (final weapon in player.hand) {
+    for (final weapon in player.hand.uniqueCards) {
       // PRUNE excessive options of deploying the weapon to different equivalent
       // slots on a quadrant. Doesn't seem to affect gameplay, and increases
       // complexity of minimax.

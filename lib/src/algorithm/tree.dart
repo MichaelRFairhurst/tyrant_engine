@@ -8,7 +8,7 @@ abstract class Branch<T> {
 class ExpectedValueBranch<T> extends Branch<T> {
   ExpectedValueBranch(super.value, super.turn, this.possibilities);
 
-  final List<Possibility<T>> possibilities;
+  final Iterable<Possibility<T>> possibilities;
 }
 
 class Possibility<T> {

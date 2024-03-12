@@ -18,7 +18,7 @@ class MinimaxStrategy implements Strategy {
     final maxingPlayer = game.turn;
     final scorer = HpDifferentialScorer(maxingPlayer);
     final branch = decisionBranch(game, actions, maxingPlayer);
-    return Minimax<Action, Game>(scorer).run(branch, 10, game.round + 1);
+    return Minimax<Action, Game>(scorer).run(branch, 10, game.round + 2);
   }
 
   Branch<Game> gameToBranch(Game game, PlayerType maxingPlayer) {
@@ -43,18 +43,25 @@ class MinimaxStrategy implements Strategy {
 
   Branch<Game> outcomeToBranch(
       Game game, Outcome<Game> outcome, PlayerType maxingPlayer) {
-    final List<RandomOutcome<Game>> outcomes;
+    final Iterable<RandomOutcome<Game>> outcomes;
     if (outcome.randomOutcomes.length > 10) {
-      outcomes = [];
+      final newOutcomes = <RandomOutcome<Game>>[];
+      outcomes = newOutcomes;
+
       final chunkSize = outcome.randomOutcomes.length ~/ 10;
+      final iterator = outcome.randomOutcomes.iterator;
       double runningProbTotal = 0.0;
 
-      for (int i = 0; i < outcome.randomOutcomes.length; ++i) {
-        final rOutcome = outcome.randomOutcomes[i];
+      iterator.moveNext();
+      for (int i = 0;
+          i < outcome.randomOutcomes.length;
+          ++i, iterator.moveNext()) {
+        final rOutcome = iterator.current;
         runningProbTotal += rOutcome.probability;
         if (i % chunkSize == 0 || i == outcome.randomOutcomes.length - 1) {
-          outcomes.add(RandomOutcome<Game>(
-            explanation: 'merge $i: ${rOutcome.explanation}',
+          final _i = i;
+          newOutcomes.add(RandomOutcome<Game>(
+            explanation: () => 'merge $_i: ${rOutcome.explanation}',
             probability: runningProbTotal,
             result: rOutcome.result,
           ));
@@ -67,12 +74,10 @@ class MinimaxStrategy implements Strategy {
     return ExpectedValueBranch<Game>(
         game,
         game.round,
-        outcomes
-            .map((o) => Possibility<Game>(
-                  o.probability,
-                  gameToBranch(o.result, maxingPlayer),
-                ))
-            .toList());
+        outcomes.map((o) => Possibility<Game>(
+              o.probability,
+              gameToBranch(o.result, maxingPlayer),
+            )));
   }
 
   DecisionBranch<Action, Game> decisionBranch(

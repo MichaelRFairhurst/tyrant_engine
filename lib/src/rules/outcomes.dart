@@ -4,12 +4,12 @@ part 'outcomes.freezed.dart';
 
 @freezed
 class Outcome<T> with _$Outcome<T> {
-  const factory Outcome({required Set<RandomOutcome<T>> randomOutcomes}) =
+  const factory Outcome({required List<RandomOutcome<T>> randomOutcomes}) =
       _Outcome;
 
-  factory Outcome.single(T t) => Outcome<T>(randomOutcomes: {
+  factory Outcome.single(T t) => Outcome<T>(randomOutcomes: [
         RandomOutcome<T>(explanation: '', probability: 1, result: t)
-      });
+      ]);
 }
 
 @freezed

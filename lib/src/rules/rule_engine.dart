@@ -185,7 +185,7 @@ class RuleEngine {
                       phase: Phase.drift,
                     ),
               ))
-          .toSet(),
+          .toList(),
     );
   }
 
@@ -220,7 +220,7 @@ class RuleEngine {
         ? PlayerType.secondPlayer
         : PlayerType.firstPlayer;
     for (final impact in impacts) {
-      final newOutcomes = <RandomOutcome<Game>>{};
+      final newOutcomes = <RandomOutcome<Game>>[];
       for (final state in outcome.randomOutcomes) {
         final dmgStates = applyDamage(state.result, target, impact.damage);
 
@@ -255,7 +255,7 @@ class RuleEngine {
         probability: p,
         result: game.updatePlayer(target, (player) => damaged),
       );
-    }).toSet());
+    }).toList());
   }
 
   Projectile? driftProjectile(Game game, Projectile projectile) {
@@ -315,6 +315,11 @@ class RuleEngine {
     final player = game.currentPlayer;
     final deployables = player.ship.build.slotTypesMap();
     for (final weapon in player.hand) {
+      // PRUNE excessive options of deploying the weapon to different equivalent
+      // slots on a quadrant. Doesn't seem to affect gameplay, and increases
+      // complexity of minimax.
+      final pruneQuadrant = <Quadrant>{};
+
       final descriptors = deployables[weapon.type];
       if (descriptors == null) {
         continue;
@@ -323,7 +328,8 @@ class RuleEngine {
       for (final descriptor in descriptors) {
         final slot = player.ship.build.slot(descriptor);
 
-        if (slot.deployed != null && slot.deployed != weapon) {
+        if (slot.deployed != null && slot.deployed != weapon ||
+            pruneQuadrant.contains(descriptor.quadrant)) {
           continue;
         }
 
@@ -331,6 +337,7 @@ class RuleEngine {
           card: weapon,
           slot: descriptor,
         ));
+        pruneQuadrant.add(descriptor.quadrant);
       }
     }
 

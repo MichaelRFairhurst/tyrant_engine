@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Outcome<T> {
-  Set<RandomOutcome<T>> get randomOutcomes =>
+  List<RandomOutcome<T>> get randomOutcomes =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -29,7 +29,7 @@ abstract class $OutcomeCopyWith<T, $Res> {
   factory $OutcomeCopyWith(Outcome<T> value, $Res Function(Outcome<T>) then) =
       _$OutcomeCopyWithImpl<T, $Res, Outcome<T>>;
   @useResult
-  $Res call({Set<RandomOutcome<T>> randomOutcomes});
+  $Res call({List<RandomOutcome<T>> randomOutcomes});
 }
 
 /// @nodoc
@@ -51,7 +51,7 @@ class _$OutcomeCopyWithImpl<T, $Res, $Val extends Outcome<T>>
       randomOutcomes: null == randomOutcomes
           ? _value.randomOutcomes
           : randomOutcomes // ignore: cast_nullable_to_non_nullable
-              as Set<RandomOutcome<T>>,
+              as List<RandomOutcome<T>>,
     ) as $Val);
   }
 }
@@ -64,7 +64,7 @@ abstract class _$$_OutcomeCopyWith<T, $Res>
       __$$_OutcomeCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call({Set<RandomOutcome<T>> randomOutcomes});
+  $Res call({List<RandomOutcome<T>> randomOutcomes});
 }
 
 /// @nodoc
@@ -84,7 +84,7 @@ class __$$_OutcomeCopyWithImpl<T, $Res>
       randomOutcomes: null == randomOutcomes
           ? _value._randomOutcomes
           : randomOutcomes // ignore: cast_nullable_to_non_nullable
-              as Set<RandomOutcome<T>>,
+              as List<RandomOutcome<T>>,
     ));
   }
 }
@@ -92,14 +92,14 @@ class __$$_OutcomeCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$_Outcome<T> implements _Outcome<T> {
-  const _$_Outcome({required final Set<RandomOutcome<T>> randomOutcomes})
+  const _$_Outcome({required final List<RandomOutcome<T>> randomOutcomes})
       : _randomOutcomes = randomOutcomes;
 
-  final Set<RandomOutcome<T>> _randomOutcomes;
+  final List<RandomOutcome<T>> _randomOutcomes;
   @override
-  Set<RandomOutcome<T>> get randomOutcomes {
+  List<RandomOutcome<T>> get randomOutcomes {
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableSetView(_randomOutcomes);
+    return EqualUnmodifiableListView(_randomOutcomes);
   }
 
   @override
@@ -129,10 +129,10 @@ class _$_Outcome<T> implements _Outcome<T> {
 
 abstract class _Outcome<T> implements Outcome<T> {
   const factory _Outcome(
-      {required final Set<RandomOutcome<T>> randomOutcomes}) = _$_Outcome<T>;
+      {required final List<RandomOutcome<T>> randomOutcomes}) = _$_Outcome<T>;
 
   @override
-  Set<RandomOutcome<T>> get randomOutcomes;
+  List<RandomOutcome<T>> get randomOutcomes;
   @override
   @JsonKey(ignore: true)
   _$$_OutcomeCopyWith<T, _$_Outcome<T>> get copyWith =>

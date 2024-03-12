@@ -1,10 +1,12 @@
 abstract class Branch<T> {
-  Branch(this.value);
+  Branch(this.value, this.turn);
+
   final T value;
+  final int turn;
 }
 
 class ExpectedValueBranch<T> extends Branch<T> {
-  ExpectedValueBranch(super.value, this.possibilities);
+  ExpectedValueBranch(super.value, super.turn, this.possibilities);
 
   final List<Possibility<T>> possibilities;
 }
@@ -17,8 +19,9 @@ class Possibility<T> {
 }
 
 class DecisionBranch<A, T> extends Branch<T> {
-  DecisionBranch(super.value, this.actions, this.min);
+  DecisionBranch(super.value, super.turn, this.actions, this.isMaxing);
 
   final Map<A, Branch<T> Function()> actions;
-  final bool min;
+  final bool isMaxing;
+  bool get isMinning => !isMaxing;
 }

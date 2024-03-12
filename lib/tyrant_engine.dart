@@ -76,7 +76,9 @@ class TyrantEngine {
         break;
       }
 
-      final chosen = strategy.pickAction(game, actions);
+      final chosen = actions.length == 1
+          ? actions.single
+          : strategy.pickAction(game, actions);
 
       print('[ACTION: $chosen]');
 

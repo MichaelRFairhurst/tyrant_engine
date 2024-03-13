@@ -11,11 +11,11 @@ import 'package:tyrant_engine/src/content/ships.dart' as ships;
 import 'package:tyrant_engine/src/strategy/strategy.dart';
 
 class GameplayEngine {
-  final ruleEngine = RuleEngine();
+  final RuleEngine ruleEngine;
   final Printer printer;
   final Random random;
 
-  GameplayEngine(this.printer, this.random);
+  GameplayEngine(this.printer, this.ruleEngine, this.random);
 
   Game defaultGame() {
     return ruleEngine.initializeGame(
@@ -32,12 +32,12 @@ class GameplayEngine {
     while (true) {
       game = playerTurn(game, strategies.player(game.turn));
 
-      if (game.firstPlayer.ship.hp < 1) {
+      if (game.firstPlayer.ship.hp <= 0) {
         printer.gameOver(game, PlayerType.secondPlayer);
         return PlayerType.secondPlayer;
       }
 
-      if (game.secondPlayer.ship.hp < 1) {
+      if (game.secondPlayer.ship.hp <= 0) {
         printer.gameOver(game, PlayerType.firstPlayer);
         return PlayerType.firstPlayer;
       }

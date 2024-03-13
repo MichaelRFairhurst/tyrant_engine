@@ -7,7 +7,8 @@ part 'ship.freezed.dart';
 @freezed
 class Ship with _$Ship implements Point {
   const factory Ship({
-    @Default(60) int hp,
+    // use a doube for ship HP so we can simulate non integer values.
+    @Default(60.0) double hp,
     required ShipBuild build,
     required int x,
     required int y,

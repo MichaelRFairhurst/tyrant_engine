@@ -1,8 +1,10 @@
+import 'package:tyrant_engine/src/gameplay/dice_roller.dart';
 import 'package:tyrant_engine/src/model/dice.dart';
 
-class DiceSums {
+class AccurateDiceRoller implements DiceRoller<int> {
   final _cache = <Dice, List<_DiceSumCacheEntry>>{};
 
+  @override
   List<T> roll<T>(Dice dice, T Function(double, int) handler) {
     final cached = _cache[dice] ?? _computeAndCache(dice);
 

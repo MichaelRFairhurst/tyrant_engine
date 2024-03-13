@@ -16,7 +16,8 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Ship {
-  int get hp => throw _privateConstructorUsedError;
+// use a doube for ship HP so we can simulate non integer values.
+  double get hp => throw _privateConstructorUsedError;
   ShipBuild get build => throw _privateConstructorUsedError;
   int get x => throw _privateConstructorUsedError;
   int get y => throw _privateConstructorUsedError;
@@ -34,7 +35,7 @@ abstract class $ShipCopyWith<$Res> {
       _$ShipCopyWithImpl<$Res, Ship>;
   @useResult
   $Res call(
-      {int hp,
+      {double hp,
       ShipBuild build,
       int x,
       int y,
@@ -70,7 +71,7 @@ class _$ShipCopyWithImpl<$Res, $Val extends Ship>
       hp: null == hp
           ? _value.hp
           : hp // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       build: null == build
           ? _value.build
           : build // ignore: cast_nullable_to_non_nullable
@@ -114,7 +115,7 @@ abstract class _$$_ShipCopyWith<$Res> implements $ShipCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int hp,
+      {double hp,
       ShipBuild build,
       int x,
       int y,
@@ -147,7 +148,7 @@ class __$$_ShipCopyWithImpl<$Res> extends _$ShipCopyWithImpl<$Res, _$_Ship>
       hp: null == hp
           ? _value.hp
           : hp // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       build: null == build
           ? _value.build
           : build // ignore: cast_nullable_to_non_nullable
@@ -180,7 +181,7 @@ class __$$_ShipCopyWithImpl<$Res> extends _$ShipCopyWithImpl<$Res, _$_Ship>
 
 class _$_Ship implements _Ship {
   const _$_Ship(
-      {this.hp = 60,
+      {this.hp = 60.0,
       required this.build,
       required this.x,
       required this.y,
@@ -188,9 +189,10 @@ class _$_Ship implements _Ship {
       this.momentumLateral = 0,
       this.momentumRotary = 0});
 
+// use a doube for ship HP so we can simulate non integer values.
   @override
   @JsonKey()
-  final int hp;
+  final double hp;
   @override
   final ShipBuild build;
   @override
@@ -242,7 +244,7 @@ class _$_Ship implements _Ship {
 
 abstract class _Ship implements Ship {
   const factory _Ship(
-      {final int hp,
+      {final double hp,
       required final ShipBuild build,
       required final int x,
       required final int y,
@@ -250,8 +252,8 @@ abstract class _Ship implements Ship {
       final int momentumLateral,
       final int momentumRotary}) = _$_Ship;
 
-  @override
-  int get hp;
+  @override // use a doube for ship HP so we can simulate non integer values.
+  double get hp;
   @override
   ShipBuild get build;
   @override

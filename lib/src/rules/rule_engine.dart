@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/deck_cache.dart';
-import 'package:tyrant_engine/src/algorithm/dice_sums.dart';
+import 'package:tyrant_engine/src/gameplay/dice_roller.dart';
 import 'package:tyrant_engine/src/model/dice.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
@@ -27,9 +27,11 @@ enum Phase {
 }
 
 class RuleEngine {
-  final random = Random();
+  final Random random;
   final geometry = Geometry();
-  final diceSums = DiceSums();
+  final DiceRoller<num> diceSums;
+
+  RuleEngine(this.random, this.diceSums);
 
   Phase get startingPhase => Phase.thaw;
 

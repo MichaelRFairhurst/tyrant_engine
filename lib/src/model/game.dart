@@ -37,4 +37,6 @@ class Game with _$Game {
             ? update(secondPlayer)
             : secondPlayer,
       );
+
+  int get turnCount => round * 2 + (turn == PlayerType.secondPlayer ? 1 : 0);
 }

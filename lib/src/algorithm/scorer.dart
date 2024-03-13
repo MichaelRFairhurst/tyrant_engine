@@ -7,6 +7,8 @@ import 'package:tyrant_engine/src/rules/geometry.dart';
 
 abstract class Scorer<T> {
   double score(T t);
+  double get alphaBetaExpansionRoot;
+  double get alphaBetaExpansionChance;
 }
 
 class HpDifferentialScorer implements Scorer<Game> {
@@ -14,6 +16,12 @@ class HpDifferentialScorer implements Scorer<Game> {
 
   final geometry = Geometry();
   final PlayerType maxingPlayerType;
+
+  @override
+  double get alphaBetaExpansionRoot => 3 * 1000;
+
+  @override
+  double get alphaBetaExpansionChance => 15 * 1000;
 
   @override
   double score(Game game) {

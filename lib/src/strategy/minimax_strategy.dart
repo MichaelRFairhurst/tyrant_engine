@@ -9,16 +9,25 @@ import 'package:tyrant_engine/src/rules/rule_engine.dart';
 import 'package:tyrant_engine/src/strategy/strategy.dart';
 
 class MinimaxStrategy implements Strategy {
-  MinimaxStrategy(this.ruleEngine);
+  MinimaxStrategy(this.ruleEngine, [this.print = true]);
 
   final RuleEngine ruleEngine;
+  final bool print;
+
+  @override
+  String get name => 'Minimax strategy';
 
   @override
   Action pickAction(Game game, List<Action> actions) {
     final maxingPlayer = game.turn;
     final scorer = HpDifferentialScorer(maxingPlayer);
     final branch = decisionBranch(game, actions, maxingPlayer);
-    return Minimax<Action, Game>(scorer).run(branch, 10, game.round + 2);
+    final minimax = Minimax<Action, Game>(scorer, print);
+    final result = minimax.run(branch, 10, game.turnCount + 1);
+    if (print) {
+      minimax.printStats();
+    }
+    return result;
   }
 
   Branch<Game> gameToBranch(Game game, PlayerType maxingPlayer) {
@@ -65,6 +74,7 @@ class MinimaxStrategy implements Strategy {
             probability: runningProbTotal,
             result: rOutcome.result,
           ));
+          runningProbTotal = 0;
         }
       }
     } else {
@@ -73,21 +83,24 @@ class MinimaxStrategy implements Strategy {
 
     return ExpectedValueBranch<Game>(
         game,
-        game.round,
-        outcomes.map((o) => Possibility<Game>(
-              o.probability,
-              gameToBranch(o.result, maxingPlayer),
-            )));
+        game.turnCount,
+        outcomes
+            .map((o) => Possibility<Game>(
+                  o.probability,
+                  gameToBranch(o.result, maxingPlayer),
+                ))
+            .toList());
   }
 
   DecisionBranch<Action, Game> decisionBranch(
       Game game, List<Action> actions, PlayerType maxingPlayer) {
     return DecisionBranch<Action, Game>(
       game,
-      game.round,
-      Map<Action, Branch<Game> Function()>.fromEntries(actions.map((a) =>
-          MapEntry(
-              a, () => outcomeToBranch(game, a.perform(game), maxingPlayer)))),
+      game.turnCount,
+      actions
+          .map((a) => Move(
+              a, () => outcomeToBranch(game, a.perform(game), maxingPlayer)))
+          .toList(),
       game.turn == maxingPlayer,
     );
   }

@@ -3,14 +3,103 @@ import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
 import 'package:tyrant_engine/src/model/ship_build.dart';
 import 'package:tyrant_engine/src/model/weapon_slot.dart';
+import 'package:tyrant_engine/src/rules/action.dart';
+import 'package:tyrant_engine/src/rules/outcomes.dart';
 
-class Printer {
+abstract class Printer {
+  void initGame(Game game);
+
+  void gameOver(Game game, PlayerType winner);
+
+  void newRound(Game game);
+
+  void newTurn(Game game);
+
+  void startPhase(Game game);
+
+  void chosenAction(Action action);
+
+  void randomOutcome(RandomOutcome outcome);
+
+  void printGame(Game game);
+}
+
+class NoopPrinter implements Printer {
+  @override
+  void initGame(Game game) {}
+
+  @override
+  void gameOver(Game game, PlayerType winner) {}
+
+  @override
+  void newRound(Game game) {}
+
+  @override
+  void newTurn(Game game) {}
+
+  @override
+  void startPhase(Game game) {}
+
+  @override
+  void chosenAction(Action action) {}
+
+  @override
+  void randomOutcome(RandomOutcome outcome) {}
+
+  @override
+  void printGame(Game game) {}
+}
+
+class CliPrinter implements Printer {
   Game? lastGame;
 
-  void setGame(Game game) {
-    lastGame = game;
+  @override
+  void initGame(Game game) {
+    print('----- NEW GAME! ----');
+    printGame(game);
+    print('');
+    print('');
   }
 
+  @override
+  void gameOver(Game game, PlayerType winner) {
+    print('');
+    print('');
+    printGame(game);
+    print('----GAME OVER!-----');
+    print('----$winner Wins!-----');
+  }
+
+  @override
+  void newRound(Game game) {
+    print('');
+    print('!!!!!!!--------- NEW ROUND: ${game.round} ---------!!!!!!!');
+    print('');
+  }
+
+  @override
+  void newTurn(Game game) {
+    print('--- NEW TURN: ${game.turn} ----');
+    print('');
+  }
+
+  @override
+  void startPhase(Game game) {
+    print('-[${game.phase}]');
+  }
+
+  @override
+  void chosenAction(Action action) {
+    print('-[ACTION: $action]');
+  }
+
+  @override
+  void randomOutcome(RandomOutcome outcome) {
+    print('-[Random outcome: ${outcome.explanation()}]');
+    print('');
+  }
+
+  @override
   void printGame(Game game) {
     if (lastGame == game) {
       return;

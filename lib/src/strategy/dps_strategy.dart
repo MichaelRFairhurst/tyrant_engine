@@ -9,6 +9,9 @@ class DpsStrategy extends Strategy {
   final geometry = Geometry();
 
   @override
+  String get name => 'Simple DPS strategy';
+
+  @override
   Action pickAction(Game game, List<Action> actions) {
     return actions.reduce((a, b) => higherDps(game, a, b));
   }

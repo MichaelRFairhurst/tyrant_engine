@@ -1,5 +1,6 @@
 import 'package:tyrant_engine/src/model/dice.dart';
+import 'package:tyrant_engine/src/rules/outcomes.dart';
 
 abstract class DiceRoller<N extends num> {
-  List<T> roll<T>(Dice dice, T Function(double, N) handler);
+  Outcome<N> roll(Dice dice);
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/scorer.dart';
 import 'package:tyrant_engine/src/algorithm/tree.dart';
+import 'package:tyrant_engine/src/rules/outcomes.dart';
 
 class Minimax<A, T> {
   final Scorer<T> scorer;
@@ -57,12 +58,12 @@ class Minimax<A, T> {
 
       assert(score == minimax(entry.result, maxDepth - 1, untilTurn));
 
-      //print('RANKING ${entry.key}: $score');
+      //print('RANKING ${entry.move}: $score');
       i++;
       if (watch) {
         print('Evaluated move $i / ${root.actions.length}');
       }
-      if (score > bestScore) {
+      if (score > bestScore + 0.00001) {
         bestAction = entry.move;
         bestScore = score;
       }
@@ -111,9 +112,9 @@ class Minimax<A, T> {
       return branch.score!;
     }
 
-    if (branch.possibilities.length == 1) {
-      return scoreOf(
-          branch.possibilities.single.result, alpha, beta, maxDepth, untilTurn);
+    if (branch.outcome.randomOutcomes.length == 1) {
+      return scoreOf(branch.outcome.randomOutcomes.single.result, alpha, beta,
+          maxDepth, untilTurn);
     }
 
     final rootScore = scorer.score(branch.value);
@@ -121,7 +122,7 @@ class Minimax<A, T> {
     beta = rootScore + scorer.alphaBetaExpansionChance;
 
     double sum = 0;
-    for (final child in branch.possibilities) {
+    for (final child in branch.outcome.randomOutcomes) {
       var speculate =
           scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
       final preCount = steps;
@@ -130,14 +131,16 @@ class Minimax<A, T> {
           //print('chance alpha violation $alpha vs $speculate');
           final diff = speculate - alpha - 1;
           alpha = speculate + diff;
-          speculate = scoreOf(child.result, alpha, beta, maxDepth, untilTurn);
+          speculate =
+              scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
           speculationFailuresChance++;
           revisitedChance += steps - preCount;
         } else if (speculate >= beta) {
           //print('chance beta violation $beta vs $speculate');
           final diff = speculate - beta + 1;
           beta = speculate + diff;
-          speculate = scoreOf(child.result, alpha, beta, maxDepth, untilTurn);
+          speculate =
+              scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
           speculationFailuresChance++;
           revisitedChance += steps - preCount;
         } else {
@@ -245,16 +248,14 @@ class Minimax<A, T> {
     }
 
     if (branch is ExpectedValueBranch<T>) {
-      if (branch.possibilities.length == 1) {
-        return minimax(branch.possibilities.single.result, maxDepth, untilTurn);
+      if (branch.outcome.randomOutcomes.length == 1) {
+        return minimax(
+            branch.outcome.randomOutcomes.single.result, maxDepth, untilTurn);
       }
 
-      double sum = 0;
-      for (final child in branch.possibilities) {
-        var score = minimax(child.result, maxDepth - 1, untilTurn);
-        sum += score * child.probability;
-      }
-      return sum;
+      return branch.outcome
+          .map<double>((child) => minimax(child, maxDepth - 1, untilTurn))
+          .expectedValue;
     }
 
     throw 'unexpected branch $branch';

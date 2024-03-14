@@ -51,46 +51,12 @@ class MinimaxStrategy implements Strategy {
   }
 
   Branch<Game> outcomeToBranch(
-      Game game, Outcome<Game> outcome, PlayerType maxingPlayer) {
-    final Iterable<RandomOutcome<Game>> outcomes;
-    if (outcome.randomOutcomes.length > 10) {
-      final newOutcomes = <RandomOutcome<Game>>[];
-      outcomes = newOutcomes;
-
-      final chunkSize = outcome.randomOutcomes.length ~/ 10;
-      final iterator = outcome.randomOutcomes.iterator;
-      double runningProbTotal = 0.0;
-
-      iterator.moveNext();
-      for (int i = 0;
-          i < outcome.randomOutcomes.length;
-          ++i, iterator.moveNext()) {
-        final rOutcome = iterator.current;
-        runningProbTotal += rOutcome.probability;
-        if (i % chunkSize == 0 || i == outcome.randomOutcomes.length - 1) {
-          final _i = i;
-          newOutcomes.add(RandomOutcome<Game>(
-            explanation: () => 'merge $_i: ${rOutcome.explanation}',
-            probability: runningProbTotal,
-            result: rOutcome.result,
-          ));
-          runningProbTotal = 0;
-        }
-      }
-    } else {
-      outcomes = outcome.randomOutcomes;
-    }
-
-    return ExpectedValueBranch<Game>(
+          Game game, Outcome<Game> outcome, PlayerType maxingPlayer) =>
+      ExpectedValueBranch<Game>(
         game,
         game.turnCount,
-        outcomes
-            .map((o) => Possibility<Game>(
-                  o.probability,
-                  gameToBranch(o.result, maxingPlayer),
-                ))
-            .toList());
-  }
+        outcome.map((o) => gameToBranch(o, maxingPlayer)),
+      );
 
   DecisionBranch<Action, Game> decisionBranch(
       Game game, List<Action> actions, PlayerType maxingPlayer) {

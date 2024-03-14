@@ -182,17 +182,19 @@ class RuleEngine {
 
     final deckSize = player.deck.size;
     return Outcome<Game>(
-        randomOutcomes: player.deck.map((card, count) => RandomOutcome<Game>(
-              explanation: () => '${game.turn} draws ${card.name}',
-              probability: count / deckSize,
-              result: game
-                  .updateCurrentPlayer(
-                    (player) => player.dealCard(card),
-                  )
-                  .copyWith(
-                    phase: Phase.drift,
-                  ),
-            )));
+        randomOutcomes: player.deck
+            .map((card, count) => RandomOutcome<Game>(
+                  explanation: () => '${game.turn} draws ${card.name}',
+                  probability: count / deckSize,
+                  result: game
+                      .updateCurrentPlayer(
+                        (player) => player.dealCard(card),
+                      )
+                      .copyWith(
+                        phase: Phase.drift,
+                      ),
+                ))
+            .toList());
   }
 
   Outcome<Game> drift(Game game) {
@@ -248,21 +250,16 @@ class RuleEngine {
 
   Outcome<Game> applyDamage(Game game, PlayerType target, Dice damage) {
     final targetPlayer = game.playerType(target);
-    return Outcome<Game>(
-        randomOutcomes: diceSums.roll(damage, (p, result) {
+    return diceSums.roll(damage).map((roll) {
       // TODO: Properly damage shields/armor/hp, and the proper quadrant!
       final damaged = targetPlayer.copyWith(
         ship: targetPlayer.ship.copyWith(
-          hp: targetPlayer.ship.hp - result,
+          hp: targetPlayer.ship.hp - roll,
         ),
       );
 
-      return RandomOutcome<Game>(
-        explanation: () => '$target takes $result damage',
-        probability: p,
-        result: game.updatePlayer(target, (player) => damaged),
-      );
-    }).toList());
+      return game.updatePlayer(target, (player) => damaged);
+    });
   }
 
   Projectile? driftProjectile(Game game, Projectile projectile) {

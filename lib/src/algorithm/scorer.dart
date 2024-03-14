@@ -37,10 +37,13 @@ class HpDifferentialScorer implements Scorer<Game> {
     // We will have to discard something (even though....that's not coded...)
     final discardScore = max(0, (maxingPlayer.hand.size - 7)) * -4000.0;
 
+    // heat also affects the deployments score
+    final heatScore = -maxingPlayer.heat;
+
     final dmgEnRouteScore = game.projectiles.fold<double>(0.0, (sum, p) {
       final dmg = p.weapon.damage.expectedValue;
       final factor = p.firedBy == maxingPlayerType ? 1 : -1;
-      return sum + factor * dmg * 500;
+      return sum + factor * dmg * 850;
     });
 
     double deploymentsScore = 0;
@@ -71,6 +74,10 @@ class HpDifferentialScorer implements Scorer<Game> {
       }
     }
 
-    return hpScore + discardScore + dmgEnRouteScore + deploymentsScore;
+    return hpScore +
+        discardScore +
+        dmgEnRouteScore +
+        deploymentsScore +
+        heatScore;
   }
 }

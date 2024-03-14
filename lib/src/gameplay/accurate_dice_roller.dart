@@ -1,26 +1,29 @@
+import 'dart:math';
+
 import 'package:tyrant_engine/src/gameplay/dice_roller.dart';
 import 'package:tyrant_engine/src/model/dice.dart';
+import 'package:tyrant_engine/src/rules/outcomes.dart';
 
 class AccurateDiceRoller implements DiceRoller<int> {
-  final _cache = <Dice, List<_DiceSumCacheEntry>>{};
+  final _cache = <Dice, Outcome<int>>{};
 
   @override
-  List<T> roll<T>(Dice dice, T Function(double, int) handler) {
-    final cached = _cache[dice] ?? _computeAndCache(dice);
-
-    return cached
-        .map((entry) => handler(entry.probability, entry.value))
-        .toList();
+  Outcome<int> roll(Dice dice) {
+    return _cache[dice] ??= _computeAndCache(dice);
   }
 
-  List<_DiceSumCacheEntry> _computeAndCache(Dice dice) {
+  Outcome<int> _computeAndCache(Dice dice) {
     final table = <int, int>{};
     _recursiveCompute(dice.sides, dice.rolls, 0, table);
-    final comb = dice.sides * dice.rolls;
+    final comb = pow(dice.sides, dice.rolls);
 
-    return _cache[dice] = table.entries
-        .map((entry) => _DiceSumCacheEntry(entry.value / comb, entry.key))
-        .toList();
+    return _cache[dice] = Outcome<int>(
+        randomOutcomes: table.entries
+            .map((entry) => RandomOutcome<int>(
+                explanation: () => 'rolled a ${entry.key}',
+                probability: entry.value / comb,
+                result: entry.key))
+            .toList());
   }
 
   // TODO: use actual statistics to calculate this in fewer steps...
@@ -38,11 +41,4 @@ class AccurateDiceRoller implements DiceRoller<int> {
       }
     }
   }
-}
-
-class _DiceSumCacheEntry {
-  final double probability;
-  final int value;
-
-  _DiceSumCacheEntry(this.probability, this.value);
 }

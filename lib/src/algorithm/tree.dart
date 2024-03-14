@@ -1,3 +1,5 @@
+import 'package:tyrant_engine/src/rules/outcomes.dart';
+
 abstract class Branch<T> {
   Branch(this.value, this.turn);
 
@@ -7,9 +9,9 @@ abstract class Branch<T> {
 }
 
 class ExpectedValueBranch<T> extends Branch<T> {
-  ExpectedValueBranch(super.value, super.turn, this.possibilities);
+  ExpectedValueBranch(super.value, super.turn, this.outcome);
 
-  final List<Possibility<T>> possibilities;
+  final Outcome<Branch<T>> outcome;
 }
 
 class Possibility<T> {

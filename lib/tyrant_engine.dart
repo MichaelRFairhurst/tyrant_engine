@@ -19,8 +19,9 @@ class TyrantEngine {
         RuleEngine(random, diceSums ?? ExpectedValueDiceRoller()), print);
   }
 
-  void printGame(PlayerStrategies strategies, [Game? game]) {
-    final ruleEngine = RuleEngine(random, AccurateDiceRoller());
+  void printGame(PlayerStrategies strategies,
+      {Game? game, DiceRoller? diceRoller}) {
+    final ruleEngine = RuleEngine(random, diceRoller ?? AccurateDiceRoller());
     final printer = CliPrinter();
     final engine = GameplayEngine(printer, ruleEngine, random);
     game ??= engine.defaultGame();

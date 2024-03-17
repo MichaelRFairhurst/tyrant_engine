@@ -14,9 +14,16 @@ import 'package:tyrant_engine/src/strategy/strategy.dart';
 class TyrantEngine {
   final random = Random();
 
-  Strategy minimaxStrategy([bool print = true, DiceRoller? diceSums]) {
+  Strategy minimaxStrategy({
+    bool print = true,
+    DiceRoller? diceRoller,
+    bool maxOnly = false,
+  }) {
     return MinimaxStrategy(
-        RuleEngine(random, diceSums ?? ExpectedValueDiceRoller()), print);
+      ruleEngine: RuleEngine(random, diceRoller ?? ExpectedValueDiceRoller()),
+      printStats: print,
+      maxOnly: maxOnly,
+    );
   }
 
   void printGame(PlayerStrategies strategies,

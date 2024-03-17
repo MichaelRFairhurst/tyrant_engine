@@ -25,6 +25,12 @@ class EndTurnAction implements Action {
       phase: ruleEngine.startingPhase,
     ));
   }
+
+  @override
+  int get hashCode => (EndTurnAction).hashCode;
+
+  @override
+  bool operator ==(Object? other) => other is EndTurnAction;
 }
 
 class EndPhaseAction implements Action {
@@ -38,6 +44,12 @@ class EndPhaseAction implements Action {
       phase: nextPhase,
     ));
   }
+
+  @override
+  int get hashCode => (EndPhaseAction).hashCode;
+
+  @override
+  bool operator ==(Object? other) => other is EndPhaseAction;
 }
 
 class BurnAction implements Action {
@@ -48,6 +60,15 @@ class BurnAction implements Action {
 
   final bool isLateral;
   final int amount;
+
+  @override
+  int get hashCode => Object.hash(isLateral, amount);
+
+  @override
+  bool operator ==(Object? other) =>
+      other is BurnAction &&
+      amount == other.amount &&
+      isLateral == other.isLateral;
 
   @override
   Outcome<Game> perform(Game game) {
@@ -79,7 +100,20 @@ class PlayWeaponAction implements Action {
   });
 
   @override
+  int get hashCode => Object.hash(card, slot);
+
+  @override
+  bool operator ==(Object? other) =>
+      other is PlayWeaponAction && card == other.card && slot == other.slot;
+
+  @override
   Outcome<Game> perform(Game game) {
+    assert(game.currentPlayer.ship.build.allSides.fold<int>(
+            0,
+            (sum, side) =>
+                sum +
+                side.weapons.fold<int>(0, (sum, w) => sum + w.deployCount)) <=
+        game.round + 1);
     return Outcome.single(game
         .updateCurrentPlayer(
           (player) => player.playFromHand(card).copyWith(
@@ -113,6 +147,15 @@ class FireWeaponAction implements Action {
     required this.slot,
     required this.ruleEngine,
   });
+
+  @override
+  int get hashCode => Object.hash(weaponName, slot.quadrant);
+
+  @override
+  bool operator ==(Object? other) =>
+      other is FireWeaponAction &&
+      other.weaponName == weaponName &&
+      other.slot.quadrant == slot.quadrant;
 
   @override
   Outcome<Game> perform(Game game) {

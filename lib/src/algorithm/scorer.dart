@@ -21,7 +21,7 @@ class HpDifferentialScorer implements Scorer<Game> {
   double get alphaBetaExpansionRoot => 3 * 1000;
 
   @override
-  double get alphaBetaExpansionChance => 15 * 1000;
+  double get alphaBetaExpansionChance => 7000;
 
   @override
   double score(Game game) {
@@ -37,15 +37,15 @@ class HpDifferentialScorer implements Scorer<Game> {
     // We will have to discard something (even though....that's not coded...)
     final discardScore = max(0, (maxingPlayer.hand.size - 7)) * -4000.0;
 
-    // heat also affects the deployments score
-    final heatScore = -maxingPlayer.heat;
-
     final dmgEnRouteScore = game.projectiles.fold<double>(0.0, (sum, p) {
       final dmg = p.weapon.damage.expectedValue;
       final factor = p.firedBy == maxingPlayerType ? 1 : -1;
       return sum + factor * dmg * 850;
     });
 
+    final cool =
+        game.turn == maxingPlayerType && game.isAfterRegen ? 0 : heatRegen;
+    final crewBoost = game.turn == maxingPlayerType && game.isAfterThaw ? 0 : 1;
     double deploymentsScore = 0;
     for (final side in maxingPlayer.ship.build.allSides) {
       for (final slot in side.weapons) {
@@ -55,15 +55,9 @@ class HpDifferentialScorer implements Scorer<Game> {
         }
 
         double factor = 1.0;
-        if (weapon.ru > maxingPlayer.activeCrew + 1) {
-          factor /= 2;
-        }
-        if (weapon.heat + maxingPlayer.heat > maxHeat + heatRegen) {
-          factor /= 2;
-        }
-        if (weapon.oht < maxingPlayer.heat - heatRegen) {
-          factor /= 2;
-        }
+        factor /=
+            5 * max(0, weapon.ru - (maxingPlayer.activeCrew + crewBoost)) + 1;
+        factor /= 2 * max(0, maxingPlayer.heat - cool - weapon.oht) + 1;
         if (weapon.range != null &&
             geometry.distance(maxingPlayer.ship, minningPlayer.ship) >
                 weapon.range!) {
@@ -73,6 +67,13 @@ class HpDifferentialScorer implements Scorer<Game> {
         deploymentsScore += weapon.damage.expectedValue * factor;
       }
     }
+
+    // heat also affects the deployments score; really just a tie-breaker.
+    final heatScore = max(
+        0,
+        game.turn == maxingPlayerType && game.isAfterRegen
+            ? 0
+            : -maxingPlayer.heat);
 
     return hpScore +
         discardScore +

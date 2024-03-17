@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/scorer.dart';
+import 'package:tyrant_engine/src/algorithm/final_action_table.dart';
 import 'package:tyrant_engine/src/algorithm/tree.dart';
 import 'package:tyrant_engine/src/rules/outcomes.dart';
 
 class Minimax<A, T> {
   final Scorer<T> scorer;
+  final FinalActionTable<T, A> finalActionTable;
   bool watch;
   Duration? time;
   int steps = 0;
@@ -18,7 +20,7 @@ class Minimax<A, T> {
   int speculationFailuresChance = 0;
   int revisitedChance = 0;
 
-  Minimax(this.scorer, [this.watch = true]);
+  Minimax(this.scorer, this.finalActionTable, [this.watch = true]);
 
   A run(DecisionBranch<A, T> root, int maxDepth, int untilTurn) {
     final startTime = DateTime.now();
@@ -56,14 +58,21 @@ class Minimax<A, T> {
         beta = localBeta + 1;
       }
 
-      assert(score == minimax(entry.result, maxDepth - 1, untilTurn));
+      assert(() {
+        final rescore = minimax(entry.result, maxDepth - 1, untilTurn);
+        if (score > rescore + 0.001 || score < rescore - 0.001) {
+          throw 'Invalid score! $score vs $rescore';
+        }
 
-      //print('RANKING ${entry.move}: $score');
+        return true;
+      }());
+
       i++;
       if (watch) {
         print('Evaluated move $i / ${root.actions.length}');
+        print('  ${entry.move} @ $score');
       }
-      if (score > bestScore + 0.00001) {
+      if (score > bestScore) {
         bestAction = entry.move;
         bestScore = score;
       }
@@ -88,13 +97,19 @@ class Minimax<A, T> {
     print('Chance speculation revisits: $revisitedChance');
   }
 
+  void trace(int maxDepth, String Function() f) {
+    return;
+    final spacer = '  ' * (20 - maxDepth);
+    print('$spacer${f()}');
+  }
+
   double speculativeRootSearch(Branch<T> branch, double alpha, double beta,
       int maxDepth, int untilTurn) {
     var score = scoreOf(branch, alpha, beta, maxDepth, untilTurn);
     final startVisits = steps;
 
     while (score >= beta) {
-      //print('window beta violation $beta vs $score');
+      trace(maxDepth, () => 'window beta violation $beta vs $score');
       final diff = score - beta;
       beta = score + diff + 1;
       score = scoreOf(branch, alpha, beta, maxDepth, untilTurn);
@@ -105,40 +120,66 @@ class Minimax<A, T> {
     return branch.score = score;
   }
 
-  double scoreExpectedValue(ExpectedValueBranch<T> branch, double alpha,
-      double beta, int maxDepth, int untilTurn) {
+  double scoreExpectedValue(ExpectedValueBranch<T> branch, double rootAlpha,
+      double rootBeta, int maxDepth, int untilTurn) {
     if (branch.score != null) {
       skipScoreCount++;
       return branch.score!;
     }
 
     if (branch.outcome.randomOutcomes.length == 1) {
-      return scoreOf(branch.outcome.randomOutcomes.single.result, alpha, beta,
-          maxDepth, untilTurn);
+      return scoreOf(branch.outcome.randomOutcomes.single.result, rootAlpha,
+          rootBeta, maxDepth, untilTurn);
     }
 
     final rootScore = scorer.score(branch.value);
-    alpha = rootScore - scorer.alphaBetaExpansionChance;
-    beta = rootScore + scorer.alphaBetaExpansionChance;
+    //alpha = rootScore - scorer.alphaBetaExpansionChance;
+    //beta = rootScore + scorer.alphaBetaExpansionChance;
+
+    var maxErrorAlpha = 0.0;
+    var maxErrorBeta = 0.0;
+    final spacer = '  ' * (20 - maxDepth);
 
     double sum = 0;
     for (final child in branch.outcome.randomOutcomes) {
+      if (child.result.score != null) {
+        sum += child.result.score! * child.probability;
+        continue;
+      }
+
+      final childScore = scorer.score(child.result.value);
+      final scoreDiff = childScore - rootScore;
+      var alpha = rootAlpha +
+          scoreDiff -
+          scorer.alphaBetaExpansionChance +
+          maxErrorAlpha;
+      var beta =
+          rootBeta + scoreDiff + scorer.alphaBetaExpansionChance + maxErrorBeta;
+
       var speculate =
           scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
       final preCount = steps;
       while (true) {
         if (speculate <= alpha) {
-          //print('chance alpha violation $alpha vs $speculate');
+          trace(
+              maxDepth,
+              () =>
+                  '$spacer chance alpha violation $alpha vs $speculate $scoreDiff $rootScore ${child.explanation()}');
           final diff = speculate - alpha - 1;
           alpha = speculate + diff;
+          maxErrorAlpha = min(maxErrorAlpha, diff);
           speculate =
               scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
           speculationFailuresChance++;
           revisitedChance += steps - preCount;
         } else if (speculate >= beta) {
-          //print('chance beta violation $beta vs $speculate');
+          trace(
+              maxDepth,
+              () =>
+                  '$spacer chance beta violation $beta vs $speculate $scoreDiff $rootScore ${child.explanation()}');
           final diff = speculate - beta + 1;
           beta = speculate + diff;
+          maxErrorBeta = max(maxErrorBeta, diff);
           speculate =
               scoreOf(child.result, alpha, beta, maxDepth - 1, untilTurn);
           speculationFailuresChance++;
@@ -151,28 +192,31 @@ class Minimax<A, T> {
       sum += speculate * child.probability;
     }
 
+    trace(maxDepth, () => '$spacer $branch sums to $sum');
     return branch.score = sum;
   }
 
   double scoreOf(Branch<T> branch, double alpha, double beta, int maxDepth,
       int untilTurn) {
+    trace(maxDepth, () => 'step $branch $alpha $beta $maxDepth');
     steps++;
-    if (watch && steps % 10000000 == 0) {
+    if (watch && steps % 1000000 == 0) {
       print('STEPS $steps');
     }
 
     if (branch.score != null) {
       skipScoreCount++;
+      trace(maxDepth, () => 'already scored: ${branch.score!}');
       return branch.score!;
     }
 
-    if (maxDepth == 0 || branch.turn == untilTurn) {
+    if (maxDepth == 0 || branch.turn >= untilTurn) {
       scorerCount++;
+      trace(maxDepth, () => '${scorer.score(branch.value)}');
 
       return branch.score ??= scorer.score(branch.value);
     }
 
-    final spacer = '  ' * (10 - maxDepth);
     if (branch is DecisionBranch<A, T>) {
       var score = branch.isMaxing ? double.negativeInfinity : double.infinity;
 
@@ -182,23 +226,31 @@ class Minimax<A, T> {
       }
 
       for (final entry in branch.actions) {
-        //print('$spacer considering subaction ${entry.move}');
+        trace(maxDepth, () => 'considering subaction ${entry.move}');
         if (branch.isMaxing) {
-          final value =
-              scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn);
+          final value = finalActionTable.shortcutActionScore(
+              branch.value,
+              entry.move,
+              untilTurn,
+              () =>
+                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));
           score = max(score, value);
           if (score >= beta) {
-            //print('Beta pruning ${entry.key}');
+            trace(maxDepth, () => 'Beta pruning ${entry.move}');
             betaCutoffsCount++;
             break;
           }
           alpha = max(alpha, value);
         } else {
-          final value =
-              scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn);
+          final value = finalActionTable.shortcutActionScore(
+              branch.value,
+              entry.move,
+              untilTurn,
+              () =>
+                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));
           score = min(score, value);
           if (score <= alpha) {
-            //print('Alpha pruning ${entry.key}');
+            trace(maxDepth, () => 'Alpha pruning ${entry.move}');
             alphaCutoffsCount++;
             break;
           }
@@ -221,11 +273,11 @@ class Minimax<A, T> {
   }
 
   double minimax(Branch<T> branch, int maxDepth, int untilTurn) {
-    if (maxDepth == 0 || branch.turn == untilTurn) {
+    final spacer = '  ' * (10 - maxDepth);
+    if (maxDepth == 0 || branch.turn >= untilTurn) {
       return branch.score ??= scorer.score(branch.value);
     }
 
-    final spacer = '  ' * (10 - maxDepth);
     if (branch is DecisionBranch<A, T>) {
       var score = branch.isMaxing ? double.negativeInfinity : double.infinity;
 

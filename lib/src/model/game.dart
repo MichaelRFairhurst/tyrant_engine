@@ -39,4 +39,13 @@ class Game with _$Game {
       );
 
   int get turnCount => round * 2 + (turn == PlayerType.secondPlayer ? 1 : 0);
+
+  int get distanceX => (firstPlayer.ship.x - secondPlayer.ship.x).abs();
+
+  int get distanceY => (firstPlayer.ship.y - secondPlayer.ship.y).abs();
+
+  bool get isAfterThaw => phase != Phase.thaw;
+
+  bool get isAfterRegen =>
+      phase != Phase.thaw && phase != Phase.draw && phase != Phase.regen;
 }

@@ -12,6 +12,10 @@ class ExpectedValueBranch<T> extends Branch<T> {
   ExpectedValueBranch(super.value, super.turn, this.outcome);
 
   final Outcome<Branch<T>> outcome;
+
+  @override
+  toString() =>
+      'random outcome, for example ${outcome.randomOutcomes.first.explanation()}';
 }
 
 class Possibility<T> {
@@ -27,6 +31,10 @@ class DecisionBranch<A, T> extends Branch<T> {
   final List<Move<A, T>> actions;
   final bool isMaxing;
   bool get isMinning => !isMaxing;
+
+  @override
+  String toString() =>
+      '${isMaxing ? "maxing" : "minning"} decisions, for example ${actions.first.move}';
 }
 
 class Move<A, T> {

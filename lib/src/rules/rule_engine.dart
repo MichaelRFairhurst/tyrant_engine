@@ -10,6 +10,7 @@ import 'package:tyrant_engine/src/model/ship.dart';
 import 'package:tyrant_engine/src/model/ship_build.dart';
 import 'package:tyrant_engine/src/model/side.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
+import 'package:tyrant_engine/src/model/weapon_slot.dart';
 import 'package:tyrant_engine/src/model/weapon_slot_descriptor.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
 import 'package:tyrant_engine/src/rules/constants.dart';
@@ -317,35 +318,45 @@ class RuleEngine {
   List<Action> activateActions(Game game) {
     final actions = <Action>[const EndPhaseAction(Phase.shootyShoot)];
     final player = game.currentPlayer;
-    final deployables = player.ship.build.slotTypesMap();
+    final slotTypesMap = player.ship.build.slotTypesMap();
     for (final weapon in player.hand.uniqueCards) {
-      // PRUNE excessive options of deploying the weapon to different equivalent
-      // slots on a quadrant. Doesn't seem to affect gameplay, and increases
-      // complexity of minimax.
-      final pruneQuadrant = <Quadrant>{};
-
-      final descriptors = deployables[weapon.type];
-      if (descriptors == null) {
-        continue;
-      }
-
-      for (final descriptor in descriptors) {
-        final slot = player.ship.build.slot(descriptor);
-
-        if (slot.deployed != null && slot.deployed != weapon ||
-            pruneQuadrant.contains(descriptor.quadrant)) {
-          continue;
-        }
-
-        actions.add(PlayWeaponAction(
-          card: weapon,
-          slot: descriptor,
-        ));
-        pruneQuadrant.add(descriptor.quadrant);
-      }
+      actions.addAll(playableSlots(player.ship.build, slotTypesMap, weapon)
+          .map((descriptor) => PlayWeaponAction(
+                card: weapon,
+                slot: descriptor,
+              )));
     }
 
     return actions;
+  }
+
+  List<WeaponSlotDescriptor> playableSlots(
+      ShipBuild shipBuild,
+      Map<WeaponSlotType, List<WeaponSlotDescriptor>> slotTypesMap,
+      Weapon weapon) {
+    // PRUNE excessive options of deploying the weapon to different equivalent
+    // slots on a quadrant. Doesn't seem to affect gameplay, and increases
+    // complexity of minimax.
+    final pruneQuadrant = <Quadrant>{};
+    final result = <WeaponSlotDescriptor>[];
+
+    final descriptors = slotTypesMap[weapon.type];
+    if (descriptors == null) {
+      return [];
+    }
+
+    for (final descriptor in descriptors) {
+      final slot = shipBuild.slot(descriptor);
+
+      if (slot.deployed != null && slot.deployed != weapon ||
+          pruneQuadrant.contains(descriptor.quadrant)) {
+        continue;
+      }
+
+      result.add(descriptor);
+      pruneQuadrant.add(descriptor.quadrant);
+    }
+    return result;
   }
 
   List<Action> fireWeaponActions(Game game) {

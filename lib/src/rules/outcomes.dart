@@ -10,7 +10,8 @@ class Outcome<T> with _$Outcome<T> {
       _Outcome;
 
   factory Outcome.single(T t) => Outcome<T>(randomOutcomes: [
-        RandomOutcome<T>(explanation: () => '', probability: 1, result: t)
+        RandomOutcome<T>(
+            explanation: () => 'single outcome', probability: 1, result: t)
       ]);
 
   Outcome<G> map<G>(G Function(T) f) => Outcome<G>(

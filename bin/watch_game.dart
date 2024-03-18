@@ -10,6 +10,7 @@ void main(List<String> arguments) {
   engine.printGame(
     PlayerStrategies(
       firstPlayerStrategy: DpsStrategy(),
+      //secondPlayerStrategy: engine.mctsStrategy(),
       secondPlayerStrategy: engine.minimaxStrategy(
         print: true,
         //diceRoller: ReducedDiceRoller(2),

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:tyrant_engine/src/algorithm/final_turn_max.dart';
 import 'package:tyrant_engine/src/algorithm/scorer.dart';
 import 'package:tyrant_engine/src/algorithm/final_action_table.dart';
 import 'package:tyrant_engine/src/algorithm/tree.dart';
@@ -8,6 +9,7 @@ import 'package:tyrant_engine/src/rules/outcomes.dart';
 class Minimax<A, T> {
   final Scorer<T> scorer;
   final FinalActionTable<T, A> finalActionTable;
+  final FinalTurnMax finalTurnMax;
   bool watch;
   Duration? time;
   int steps = 0;
@@ -20,7 +22,8 @@ class Minimax<A, T> {
   int speculationFailuresChance = 0;
   int revisitedChance = 0;
 
-  Minimax(this.scorer, this.finalActionTable, [this.watch = true]);
+  Minimax(this.scorer, this.finalActionTable, this.finalTurnMax,
+      [this.watch = true]);
 
   A run(DecisionBranch<A, T> root, int maxDepth, int untilTurn) {
     final startTime = DateTime.now();
@@ -210,11 +213,17 @@ class Minimax<A, T> {
       return branch.score!;
     }
 
-    if (maxDepth == 0 || branch.turn >= untilTurn) {
-      scorerCount++;
-      trace(maxDepth, () => '${scorer.score(branch.value)}');
+    if (maxDepth == 0 || branch.turn >= untilTurn - 2) {
+      if (branch.score == null) {
+        scorerCount++;
+        branch.score = finalTurnMax.opposingPlayersMax(branch.value as dynamic);
+        trace(maxDepth, () => 'Scoring: ${branch.score}');
+      } else {
+        skipScoreCount++;
+        trace(maxDepth, () => 'Already scored: ${branch.score}');
+      }
 
-      return branch.score ??= scorer.score(branch.value);
+      return branch.score!;
     }
 
     if (branch is DecisionBranch<A, T>) {
@@ -228,12 +237,14 @@ class Minimax<A, T> {
       for (final entry in branch.actions) {
         trace(maxDepth, () => 'considering subaction ${entry.move}');
         if (branch.isMaxing) {
-          final value = finalActionTable.shortcutActionScore(
+          /*final value = finalActionTable.shortcutActionScore(
               branch.value,
               entry.move,
               untilTurn,
               () =>
-                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));
+                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));*/
+          final value =
+              scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn);
           score = max(score, value);
           if (score >= beta) {
             trace(maxDepth, () => 'Beta pruning ${entry.move}');
@@ -242,12 +253,14 @@ class Minimax<A, T> {
           }
           alpha = max(alpha, value);
         } else {
-          final value = finalActionTable.shortcutActionScore(
+          /*final value = finalActionTable.shortcutActionScore(
               branch.value,
               entry.move,
               untilTurn,
               () =>
-                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));
+                  scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn));*/
+          final value =
+              scoreOf(entry.result, alpha, beta, maxDepth - 1, untilTurn);
           score = min(score, value);
           if (score <= alpha) {
             trace(maxDepth, () => 'Alpha pruning ${entry.move}');

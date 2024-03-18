@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
@@ -110,18 +112,18 @@ class CliPrinter implements Printer {
           game.firstPlayer) {
         printPlayerInfo(game.firstPlayer, PlayerType.firstPlayer);
       }
-      if (lastGame?.firstPlayer.ship != game.firstPlayer.ship) {
-        printShipInfo(game.firstPlayer.ship, PlayerType.firstPlayer);
-      }
     }
     if (lastGame?.secondPlayer != game.secondPlayer) {
       if (lastGame?.secondPlayer.copyWith(ship: game.secondPlayer.ship) !=
           game.secondPlayer) {
         printPlayerInfo(game.secondPlayer, PlayerType.secondPlayer);
       }
-      if (lastGame?.secondPlayer.ship != game.secondPlayer.ship) {
-        printShipInfo(game.secondPlayer.ship, PlayerType.secondPlayer);
-      }
+    }
+
+    if (lastGame?.firstPlayer.ship != game.firstPlayer.ship ||
+        lastGame?.secondPlayer.ship != game.secondPlayer.ship) {
+      printBoard(game);
+      printShipsInfo(game);
     }
 
     if ((lastGame?.projectiles.length ?? 0) == 0) {
@@ -157,37 +159,144 @@ class CliPrinter implements Printer {
     print('');
   }
 
-  void printShipInfo(Ship ship, PlayerType player) {
+  void printShipsInfo(Game game) {
+    final firstPlayerStr =
+        shipInfoStr(game.firstPlayer.ship, PlayerType.firstPlayer);
+    final secondPlayerStr =
+        shipInfoStr(game.secondPlayer.ship, PlayerType.secondPlayer);
+    final firstPlayerLines = firstPlayerStr.split('\n');
+    final secondPlayerLines = secondPlayerStr.split('\n');
+
+    print('');
+    for (int i = 0; i < firstPlayerLines.length; ++i) {
+      final left = firstPlayerLines[i].padRight(75);
+      final right = secondPlayerLines[i].padRight(75);
+      print('||||| $left || $right |||||');
+    }
+    print('');
+  }
+
+  String shipInfoStr(Ship ship, PlayerType player) {
     final str = r'''
-|||||     FORWARD: {WEAPON_NAME_F0} [{F0TAPPED}], {WEAPON_NAME_F1} [{F1TAPPED}]
-|||||
-|||||                               || ||
-|||||  {WEAPON_NAME_P0}[{P0TAPPED}] | U | {WEAPON_NAME_S0}[{S0TAPPED}]
-|||||  {WEAPON_NAME_P1}[{P1TAPPED}] | - | {WEAPON_NAME_S1}[{S1TAPPED}]
-|||||  {WEAPON_NAME_P2}[{P2TAPPED}] | - | {WEAPON_NAME_S2}[{S2TAPPED}]
-|||||  {WEAPON_NAME_P3}[{P3TAPPED}] | _ | {WEAPON_NAME_S3}[{S3TAPPED}]
-|||||       AP: {AP_PORT}   [     ] [/ \]       AP: {AP_STARBOARD}
-|||||
-||||| 	AFT: {WEAPON_NAME_A0} [{A0TAPPED}], {WEAPON_NAME_A1} [{A1TAPPED}]
-|||||
-|||||                                 {MOF}
-|||||                                 ^
-|||||                                 |
-|||||                             ({x}, {y}) --> {MOL}
-|||||
+PLAYER {PLAYER_TYPE_STR} SHIP:
+  hp: {HP_STR}
+
+  FORWARD: {WEAPON_NAME_F0} [{F0TAPPED}], {WEAPON_NAME_F1} [{F1TAPPED}]
+
+                              || ||
+ {WEAPON_NAME_P0}[{P0TAPPED}] | U | {WEAPON_NAME_S0}[{S0TAPPED}]
+ {WEAPON_NAME_P1}[{P1TAPPED}] | - | {WEAPON_NAME_S1}[{S1TAPPED}]
+ {WEAPON_NAME_P2}[{P2TAPPED}] | - | {WEAPON_NAME_S2}[{S2TAPPED}]
+ {WEAPON_NAME_P3}[{P3TAPPED}] | _ | {WEAPON_NAME_S3}[{S3TAPPED}]
+      AP: {AP_PORT}   [     ] [/ \]       AP: {AP_STARBOARD}
+
+  AFT: {WEAPON_NAME_A0} [{A0TAPPED}], {WEAPON_NAME_A1} [{A1TAPPED}]
+
+                                {MOF}
+                                ^
+                                |
+                            ({x}, {y}) --> {MOL}
+                            Orientation: {ORIENT}
+                            Spinning: {SPIN}
 ''';
 
-    print('||||| PLAYER $player SHIP:');
-    print('||||| hp: ${ship.hp}');
-    print('|||||');
-    print(fixedLengthReplace(str, {
+    return fixedLengthReplace(str, {
+      'PLAYER_TYPE_STR': player.toString().replaceAll('PlayerType.', ''),
+      'HP_STR': ship.hp.toString(),
       'x': ship.x.toString(),
       'y': ship.y.toString(),
+      'ORIENT': ship.orientation.toString(),
       'MOF': ship.momentumForward.toString(),
       'MOL': ship.momentumLateral.toString(),
+      'SPIN': ship.momentumRotary.toString(),
       ...weaponSlotReplacementMap(ship.build),
-    }));
-    print('');
+    });
+  }
+
+  void printBoard(Game game) {
+    final sizeX = game.distanceX + 12;
+    final sizeY = game.distanceY + 6;
+    final ship1 = game.firstPlayer.ship;
+    final ship2 = game.secondPlayer.ship;
+    final relativeX = min(ship1.x, ship2.x);
+    final relativeY = min(ship1.y, ship2.y);
+
+    final topBottomLine = '+' * (sizeX + 2);
+    var output = topBottomLine;
+    for (var y = relativeY - 3; y < sizeY + relativeY - 3; ++y) {
+      var line = ' ' * sizeX;
+      line = putShip(line, y, ship1, relativeX - 6);
+      line = putShip(line, y, ship2, relativeX - 6);
+      output = '$output\n+$line+';
+    }
+    output = '$output\n$topBottomLine';
+
+    print('BOARD:');
+    print(output);
+  }
+
+  String putShip(String str, int y, Ship ship, int relativeX) {
+    String charAt(int offset, String char) {
+      return str.replaceRange(
+          ship.x + offset - relativeX, ship.x + offset + 1 - relativeX, char);
+    }
+
+    if (y == ship.y - 1) {
+      switch (ship.orientation) {
+        case 90:
+        case 270:
+          break;
+        case 0:
+          return charAt(0, '^');
+        case 45:
+          return charAt(1, '*');
+        case 135:
+          return charAt(-1, r'\');
+        case 180:
+          return charAt(0, '|');
+        case 225:
+          return charAt(1, '/');
+        case 315:
+          return charAt(-1, '*');
+      }
+    } else if (y == ship.y) {
+      switch (ship.orientation) {
+        case 90:
+          return str.replaceRange(
+              ship.x - 1 - relativeX, ship.x + 2 - relativeX, '-->');
+        case 270:
+          return str.replaceRange(
+              ship.x - 1 - relativeX, ship.x + 2 - relativeX, '<--');
+        case 0:
+        case 180:
+          return charAt(0, '|');
+        case 45:
+        case 225:
+          return charAt(0, '/');
+        case 135:
+        case 315:
+          return charAt(0, r'\');
+      }
+    } else if (y == ship.y + 1) {
+      switch (ship.orientation) {
+        case 90:
+        case 270:
+          break;
+        case 0:
+          return charAt(0, '|');
+        case 45:
+          return charAt(-1, '/');
+        case 135:
+          return charAt(1, '*');
+        case 180:
+          return charAt(0, 'V');
+        case 225:
+          return charAt(-1, '*');
+        case 315:
+          return charAt(1, r'\');
+      }
+    }
+    return str;
   }
 
   Map<String, String> weaponSlotReplacementMap(ShipBuild ship) {

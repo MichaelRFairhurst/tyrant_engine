@@ -3,6 +3,7 @@ import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/model/projectile.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
 import 'package:tyrant_engine/src/model/weapon_slot_descriptor.dart';
+import 'package:tyrant_engine/src/rules/geometry.dart';
 import 'package:tyrant_engine/src/rules/outcomes.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
 
@@ -54,40 +55,44 @@ class EndPhaseAction implements Action {
 
 class BurnAction implements Action {
   BurnAction({
-    required this.isLateral,
-    required this.amount,
+    required this.lateral,
+    required this.forward,
+    required this.rotary,
   });
 
-  final bool isLateral;
-  final int amount;
+  final int forward;
+  final int lateral;
+  final int rotary;
 
   @override
-  int get hashCode => Object.hash(isLateral, amount);
+  int get hashCode => Object.hashAll([forward, lateral, rotary]);
 
   @override
   bool operator ==(Object? other) =>
       other is BurnAction &&
-      amount == other.amount &&
-      isLateral == other.isLateral;
+      forward == other.forward &&
+      lateral == other.lateral &&
+      rotary == other.rotary;
 
   @override
   Outcome<Game> perform(Game game) {
-    return Outcome.single(game.updateCurrentPlayer((player) => player.copyWith(
-          ru: player.ru + amount,
-          heat: player.heat + amount,
-          ship: player.ship.copyWith(
-            momentumForward: isLateral
-                ? player.ship.momentumForward
-                : player.ship.momentumForward + amount,
-            momentumLateral: isLateral
-                ? player.ship.momentumLateral + amount
-                : player.ship.momentumLateral,
-          ),
-        )));
+    return Outcome.single(game
+        .updateCurrentPlayer((player) => player.copyWith(
+              ru: player.ru - lateral.abs() - forward.abs() - rotary.abs(),
+              heat: player.heat + forward.abs() + lateral.abs(),
+              ship: player.ship.copyWith(
+                momentumForward: player.ship.momentumForward + forward,
+                momentumLateral: player.ship.momentumLateral + lateral,
+                momentumRotary: player.ship.momentumRotary + rotary,
+              ),
+            ))
+        .copyWith(
+          phase: Phase.activate,
+        ));
   }
 
   @override
-  String toString() => 'Burn ${isLateral ? "laterally" : "forward"} by $amount';
+  String toString() => 'Burn lateral $lateral, rotary $rotary';
 }
 
 class PlayWeaponAction implements Action {
@@ -178,7 +183,12 @@ class FireWeaponAction implements Action {
       final target = game.turn == PlayerType.firstPlayer
           ? PlayerType.secondPlayer
           : PlayerType.firstPlayer;
-      return ruleEngine.applyDamage(weaponTapped, target, weapon.damage);
+      final targetedArc = Geometry().targetedArc(
+        target: game.enemyPlayer.ship,
+        firing: player.ship,
+      );
+      return ruleEngine.applyDamage(
+          weaponTapped, target, targetedArc, weapon.damage);
     } else {
       return Outcome.single(weaponTapped.copyWith(
         projectiles: game.projectiles.toList()

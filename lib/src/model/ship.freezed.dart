@@ -20,7 +20,8 @@ mixin _$Ship {
   double get hp => throw _privateConstructorUsedError;
   ShipBuild get build => throw _privateConstructorUsedError;
   int get x => throw _privateConstructorUsedError;
-  int get y => throw _privateConstructorUsedError;
+  int get y => throw _privateConstructorUsedError; // Degrees, 0 = 12 oclock
+  int get orientation => throw _privateConstructorUsedError;
   int get momentumForward => throw _privateConstructorUsedError;
   int get momentumLateral => throw _privateConstructorUsedError;
   int get momentumRotary => throw _privateConstructorUsedError;
@@ -39,6 +40,7 @@ abstract class $ShipCopyWith<$Res> {
       ShipBuild build,
       int x,
       int y,
+      int orientation,
       int momentumForward,
       int momentumLateral,
       int momentumRotary});
@@ -63,6 +65,7 @@ class _$ShipCopyWithImpl<$Res, $Val extends Ship>
     Object? build = null,
     Object? x = null,
     Object? y = null,
+    Object? orientation = null,
     Object? momentumForward = null,
     Object? momentumLateral = null,
     Object? momentumRotary = null,
@@ -83,6 +86,10 @@ class _$ShipCopyWithImpl<$Res, $Val extends Ship>
       y: null == y
           ? _value.y
           : y // ignore: cast_nullable_to_non_nullable
+              as int,
+      orientation: null == orientation
+          ? _value.orientation
+          : orientation // ignore: cast_nullable_to_non_nullable
               as int,
       momentumForward: null == momentumForward
           ? _value.momentumForward
@@ -119,6 +126,7 @@ abstract class _$$_ShipCopyWith<$Res> implements $ShipCopyWith<$Res> {
       ShipBuild build,
       int x,
       int y,
+      int orientation,
       int momentumForward,
       int momentumLateral,
       int momentumRotary});
@@ -140,6 +148,7 @@ class __$$_ShipCopyWithImpl<$Res> extends _$ShipCopyWithImpl<$Res, _$_Ship>
     Object? build = null,
     Object? x = null,
     Object? y = null,
+    Object? orientation = null,
     Object? momentumForward = null,
     Object? momentumLateral = null,
     Object? momentumRotary = null,
@@ -160,6 +169,10 @@ class __$$_ShipCopyWithImpl<$Res> extends _$ShipCopyWithImpl<$Res, _$_Ship>
       y: null == y
           ? _value.y
           : y // ignore: cast_nullable_to_non_nullable
+              as int,
+      orientation: null == orientation
+          ? _value.orientation
+          : orientation // ignore: cast_nullable_to_non_nullable
               as int,
       momentumForward: null == momentumForward
           ? _value.momentumForward
@@ -185,6 +198,7 @@ class _$_Ship implements _Ship {
       required this.build,
       required this.x,
       required this.y,
+      required this.orientation,
       this.momentumForward = 0,
       this.momentumLateral = 0,
       this.momentumRotary = 0});
@@ -199,6 +213,9 @@ class _$_Ship implements _Ship {
   final int x;
   @override
   final int y;
+// Degrees, 0 = 12 oclock
+  @override
+  final int orientation;
   @override
   @JsonKey()
   final int momentumForward;
@@ -211,7 +228,7 @@ class _$_Ship implements _Ship {
 
   @override
   String toString() {
-    return 'Ship(hp: $hp, build: $build, x: $x, y: $y, momentumForward: $momentumForward, momentumLateral: $momentumLateral, momentumRotary: $momentumRotary)';
+    return 'Ship(hp: $hp, build: $build, x: $x, y: $y, orientation: $orientation, momentumForward: $momentumForward, momentumLateral: $momentumLateral, momentumRotary: $momentumRotary)';
   }
 
   @override
@@ -223,6 +240,8 @@ class _$_Ship implements _Ship {
             (identical(other.build, build) || other.build == build) &&
             (identical(other.x, x) || other.x == x) &&
             (identical(other.y, y) || other.y == y) &&
+            (identical(other.orientation, orientation) ||
+                other.orientation == orientation) &&
             (identical(other.momentumForward, momentumForward) ||
                 other.momentumForward == momentumForward) &&
             (identical(other.momentumLateral, momentumLateral) ||
@@ -232,8 +251,8 @@ class _$_Ship implements _Ship {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, hp, build, x, y, momentumForward,
-      momentumLateral, momentumRotary);
+  int get hashCode => Object.hash(runtimeType, hp, build, x, y, orientation,
+      momentumForward, momentumLateral, momentumRotary);
 
   @JsonKey(ignore: true)
   @override
@@ -248,6 +267,7 @@ abstract class _Ship implements Ship {
       required final ShipBuild build,
       required final int x,
       required final int y,
+      required final int orientation,
       final int momentumForward,
       final int momentumLateral,
       final int momentumRotary}) = _$_Ship;
@@ -260,6 +280,8 @@ abstract class _Ship implements Ship {
   int get x;
   @override
   int get y;
+  @override // Degrees, 0 = 12 oclock
+  int get orientation;
   @override
   int get momentumForward;
   @override

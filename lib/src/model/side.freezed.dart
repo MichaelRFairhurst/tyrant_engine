@@ -16,7 +16,8 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Side {
-  int? get armor => throw _privateConstructorUsedError;
+// A double so that we can simulate averaged damage, etc.
+  double? get armor => throw _privateConstructorUsedError;
   List<WeaponSlot> get weapons => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -28,7 +29,7 @@ abstract class $SideCopyWith<$Res> {
   factory $SideCopyWith(Side value, $Res Function(Side) then) =
       _$SideCopyWithImpl<$Res, Side>;
   @useResult
-  $Res call({int? armor, List<WeaponSlot> weapons});
+  $Res call({double? armor, List<WeaponSlot> weapons});
 }
 
 /// @nodoc
@@ -51,7 +52,7 @@ class _$SideCopyWithImpl<$Res, $Val extends Side>
       armor: freezed == armor
           ? _value.armor
           : armor // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       weapons: null == weapons
           ? _value.weapons
           : weapons // ignore: cast_nullable_to_non_nullable
@@ -66,7 +67,7 @@ abstract class _$$_SideCopyWith<$Res> implements $SideCopyWith<$Res> {
       __$$_SideCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int? armor, List<WeaponSlot> weapons});
+  $Res call({double? armor, List<WeaponSlot> weapons});
 }
 
 /// @nodoc
@@ -85,7 +86,7 @@ class __$$_SideCopyWithImpl<$Res> extends _$SideCopyWithImpl<$Res, _$_Side>
       armor: freezed == armor
           ? _value.armor
           : armor // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       weapons: null == weapons
           ? _value._weapons
           : weapons // ignore: cast_nullable_to_non_nullable
@@ -101,8 +102,9 @@ class _$_Side extends _Side {
       : _weapons = weapons,
         super._();
 
+// A double so that we can simulate averaged damage, etc.
   @override
-  final int? armor;
+  final double? armor;
   final List<WeaponSlot> _weapons;
   @override
   List<WeaponSlot> get weapons {
@@ -137,11 +139,11 @@ class _$_Side extends _Side {
 
 abstract class _Side extends Side {
   const factory _Side(
-      {final int? armor, required final List<WeaponSlot> weapons}) = _$_Side;
+      {final double? armor, required final List<WeaponSlot> weapons}) = _$_Side;
   const _Side._() : super._();
 
-  @override
-  int? get armor;
+  @override // A double so that we can simulate averaged damage, etc.
+  double? get armor;
   @override
   List<WeaponSlot> get weapons;
   @override

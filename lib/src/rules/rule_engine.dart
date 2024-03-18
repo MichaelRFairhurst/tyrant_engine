@@ -88,6 +88,7 @@ class RuleEngine {
       build: build,
       x: x,
       y: 0,
+      orientation: random.nextInt(8) * 45,
       momentumForward: random.nextInt(7) - 3,
       momentumLateral: random.nextInt(7) - 3,
       momentumRotary: random.nextInt(7) - 3,
@@ -200,14 +201,14 @@ class RuleEngine {
 
   Outcome<Game> drift(Game game) {
     final driftedProjectiles = <Projectile>[];
-    final impacts = <Weapon>[];
+    final impacts = <Projectile>[];
 
     for (final projectile in game.projectiles) {
       final drifted = driftProjectile(game, projectile);
       if (drifted != null) {
         driftedProjectiles.add(drifted);
       } else {
-        impacts.add(projectile.weapon);
+        impacts.add(projectile);
       }
     }
 
@@ -216,11 +217,13 @@ class RuleEngine {
               ship: player.ship.copyWith(
                 x: player.ship.x + player.ship.momentumLateral,
                 y: player.ship.y + player.ship.momentumForward,
+                orientation: geometry.rotateTicks(
+                    player.ship.orientation, player.ship.momentumRotary),
               ),
             ))
         .copyWith(
           projectiles: driftedProjectiles,
-          phase: Phase.activate,
+          phase: Phase.burn,
         );
 
     var outcome = Outcome.single(driftsOnly);
@@ -229,9 +232,12 @@ class RuleEngine {
         ? PlayerType.secondPlayer
         : PlayerType.firstPlayer;
     for (final impact in impacts) {
+      final targetedArc = geometry.targetedArc(
+          firing: impact, target: game.playerType(target).ship);
       final newOutcomes = <RandomOutcome<Game>>[];
       for (final state in outcome.randomOutcomes) {
-        final dmgStates = applyDamage(state.result, target, impact.damage);
+        final dmgStates = applyDamage(
+            state.result, target, targetedArc, impact.weapon.damage);
 
         for (final dmgState in dmgStates.randomOutcomes) {
           newOutcomes.add(RandomOutcome<Game>(
@@ -249,10 +255,40 @@ class RuleEngine {
     return outcome;
   }
 
-  Outcome<Game> applyDamage(Game game, PlayerType target, Dice damage) {
+  Outcome<Game> applyDamage(
+      Game game, PlayerType target, Quadrant? targetedArc, Dice damage) {
     final targetPlayer = game.playerType(target);
     return diceSums.roll(damage).map((roll) {
-      // TODO: Properly damage shields/armor/hp, and the proper quadrant!
+      if (targetedArc != null) {
+        final side = targetPlayer.ship.build.quadrant(targetedArc);
+        if (side.armor! > roll) {
+          // TODO: armor bonus effects
+          return game.updatePlayer(
+            target,
+            (enemy) => enemy.copyWith(
+              ship: enemy.ship.copyWith(
+                build: enemy.ship.build.onQuadrant(targetedArc,
+                    (side) => side.copyWith(armor: side.armor! - roll)),
+              ),
+            ),
+          );
+        } else {
+          // TODO: penetrative effects
+          final hpDamage = roll - side.armor!;
+          return game.updatePlayer(
+            target,
+            (enemy) => enemy.copyWith(
+              ship: enemy.ship.copyWith(
+                hp: enemy.ship.hp - hpDamage,
+                build: enemy.ship.build
+                    .onQuadrant(targetedArc, (side) => side.copyWith(armor: 0)),
+              ),
+            ),
+          );
+        }
+      }
+
+      // TODO: hull bonus effects
       final damaged = targetPlayer.copyWith(
         ship: targetPlayer.ship.copyWith(
           hp: targetPlayer.ship.hp - roll,
@@ -307,12 +343,26 @@ class RuleEngine {
         return activateActions(game);
 
       case Phase.burn:
-        // TODO: implement burn
-        return [];
+        return burnActions(game);
 
       case Phase.shootyShoot:
         return fireWeaponActions(game);
     }
+  }
+
+  List<Action> burnActions(Game game) {
+    final results = <Action>[];
+    // TODO: forward/lateral burns
+    final momentumRotary = game.currentPlayer.ship.momentumRotary;
+    for (int i = -3; i < 4; ++i) {
+      results.add(BurnAction(
+        forward: 0,
+        lateral: 0,
+        rotary: i - momentumRotary,
+      ));
+    }
+
+    return results;
   }
 
   List<Action> activateActions(Game game) {
@@ -367,6 +417,10 @@ class RuleEngine {
         ? game.secondPlayer
         : game.firstPlayer;
     final distance = geometry.distance(player.ship, target.ship);
+    final arcs = geometry.targetingArcs(
+      firing: player.ship,
+      target: target.ship,
+    );
 
     for (final quadrant in Quadrant.values) {
       final side = player.ship.build.quadrant(quadrant);
@@ -376,11 +430,10 @@ class RuleEngine {
           continue;
         }
 
-        final desc = WeaponSlotDescriptor(quadrant: quadrant, slotIdx: i);
         final weapon = slot.deployed!;
 
         final range = weapon.range;
-        if (range != null && distance > range) {
+        if (range != null && (distance > range || !arcs.contains(quadrant))) {
           continue;
         }
 
@@ -388,11 +441,11 @@ class RuleEngine {
           continue;
         }
 
-        // TODO: check orientation of ship
         if (player.ru < weapon.ru || player.heat > weapon.oht) {
           continue;
         }
 
+        final desc = WeaponSlotDescriptor(quadrant: quadrant, slotIdx: i);
         actions.add(FireWeaponAction(
           weaponName: weapon.name,
           slot: desc,

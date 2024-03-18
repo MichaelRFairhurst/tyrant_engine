@@ -1,6 +1,20 @@
+import 'dart:collection';
+
 class TranspositionTable<G, T> {
-  var _oldCache = <G, T>{};
-  var _newCache = <G, T>{};
+  late HashMap<G, T> _oldCache;
+  late HashMap<G, T> _newCache;
+  final Equality<G>? equality;
+
+  TranspositionTable([this.equality]) {
+    _oldCache = HashMap<G, T>(
+      hashCode: equality?.hash,
+      equals: equality?.equals,
+    );
+    _newCache = HashMap<G, T>(
+      hashCode: equality?.hash,
+      equals: equality?.equals,
+    );
+  }
 
   T putIfAbsent(G g, T Function() ifAbsent) {
     return _newCache.putIfAbsent(g, () {
@@ -11,6 +25,14 @@ class TranspositionTable<G, T> {
 
   void gc() {
     _oldCache = _newCache;
-    _newCache = <G, T>{};
+    _newCache = HashMap<G, T>(
+      hashCode: equality?.hash,
+      equals: equality?.equals,
+    );
   }
+}
+
+abstract class Equality<T> {
+  int hash(T t);
+  bool equals(T a, T b);
 }

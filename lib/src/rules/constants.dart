@@ -3,5 +3,5 @@ const totalCrew = 10;
 const startingHand = 7;
 const fullRU = 10;
 const heatRegen = 2;
-const startingArmor = 20;
+const startingArmor = 20.0;
 const maxHeat = 10;

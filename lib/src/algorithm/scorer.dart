@@ -29,25 +29,67 @@ class HpDifferentialScorer implements Scorer<Game> {
         ? PlayerType.secondPlayer
         : PlayerType.firstPlayer;
 
-    final minningPlayer = game.playerType(minningPlayerType);
-    final maxingPlayer = game.playerType(maxingPlayerType);
+    return scoreSinglePlayer(maxingPlayerType, game) -
+        scoreSinglePlayer(minningPlayerType, game);
+  }
 
-    final hpScore = (maxingPlayer.ship.hp - minningPlayer.ship.hp) * 1000.0;
+  double totalScoreCurrentPlayer(Game game) {
+    final negativePlayerType = game.turn == PlayerType.firstPlayer
+        ? PlayerType.secondPlayer
+        : PlayerType.firstPlayer;
+
+    return scoreSinglePlayer(game.turn, game) -
+        scoreSinglePlayer(negativePlayerType, game);
+  }
+
+  double scoreSinglePlayer(PlayerType pType, Game game) {
+    final player = game.playerType(pType);
+    final hpScore = player.ship.hp * 1000.0;
+
+    final armorScore = player.ship.build.port.armor! +
+        player.ship.build.starboard.armor! * 800;
 
     // We will have to discard something (even though....that's not coded...)
-    final discardScore = max(0, (maxingPlayer.hand.size - 7)) * -4000.0;
+    final discardScore = max(0, (player.hand.size - 7)) * -4000.0;
 
-    final dmgEnRouteScore = game.projectiles.fold<double>(0.0, (sum, p) {
-      final dmg = p.weapon.damage.expectedValue;
-      final factor = p.firedBy == maxingPlayerType ? 1 : -1;
-      return sum + factor * dmg * 850;
-    });
+    // heat also affects the deployments score; really just a tie-breaker.
+    final heatScore = max(
+        0,
+        game.turn == maxingPlayerType && game.isAfterRegen
+            ? -player.heat + heatRegen
+            : -player.heat);
+
+    final rotationScore = -player.ship.momentumRotary.abs() * 10;
+
+    return hpScore +
+        armorScore +
+        discardScore +
+        dmgEnRouteScore(pType, game) +
+        deploymentsScore(pType, game) +
+        heatScore +
+        rotationScore;
+  }
+
+  double dmgEnRouteScore(PlayerType player, Game game) => game.projectiles
+          .where((p) => p.firedBy == player)
+          .fold<double>(0.0, (sum, p) {
+        final dmg = p.weapon.damage.expectedValue;
+        return sum + dmg * 850;
+      });
+
+  double deploymentsScore(PlayerType pType, Game game) {
+    final player = game.playerType(pType);
+    final enemy = pType == PlayerType.firstPlayer
+        ? PlayerType.secondPlayer
+        : PlayerType.firstPlayer;
+    final enemyShip = game.playerType(enemy).ship;
 
     final cool =
         game.turn == maxingPlayerType && game.isAfterRegen ? 0 : heatRegen;
     final crewBoost = game.turn == maxingPlayerType && game.isAfterThaw ? 0 : 1;
+
     double deploymentsScore = 0;
-    for (final side in maxingPlayer.ship.build.allSides) {
+    for (final side in player.ship.build.allSides) {
       for (final slot in side.weapons) {
         final weapon = slot.deployed;
         if (weapon == null) {
@@ -55,12 +97,10 @@ class HpDifferentialScorer implements Scorer<Game> {
         }
 
         double factor = 1.0;
-        factor /=
-            5 * max(0, weapon.ru - (maxingPlayer.activeCrew + crewBoost)) + 1;
-        factor /= 2 * max(0, maxingPlayer.heat - cool - weapon.oht) + 1;
+        factor /= 5 * max(0, weapon.ru - (player.activeCrew + crewBoost)) + 1;
+        factor /= 2 * max(0, player.heat - cool - weapon.oht) + 1;
         if (weapon.range != null &&
-            geometry.distance(maxingPlayer.ship, minningPlayer.ship) >
-                weapon.range!) {
+            geometry.distance(player.ship, enemyShip) > weapon.range!) {
           factor /= 2;
         }
 
@@ -68,17 +108,6 @@ class HpDifferentialScorer implements Scorer<Game> {
       }
     }
 
-    // heat also affects the deployments score; really just a tie-breaker.
-    final heatScore = max(
-        0,
-        game.turn == maxingPlayerType && game.isAfterRegen
-            ? 0
-            : -maxingPlayer.heat);
-
-    return hpScore +
-        discardScore +
-        dmgEnRouteScore +
-        deploymentsScore +
-        heatScore;
+    return deploymentsScore;
   }
 }

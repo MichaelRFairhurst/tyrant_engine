@@ -8,6 +8,7 @@ import 'package:tyrant_engine/src/gameplay/gameplay_engine.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
+import 'package:tyrant_engine/src/strategy/mcts_strategy.dart';
 import 'package:tyrant_engine/src/strategy/minimax_strategy.dart';
 import 'package:tyrant_engine/src/strategy/strategy.dart';
 
@@ -20,25 +21,32 @@ class TyrantEngine {
     bool maxOnly = false,
   }) {
     return MinimaxStrategy(
-      ruleEngine: RuleEngine(random, diceRoller ?? ExpectedValueDiceRoller()),
+      ruleEngine: ruleEngine(diceRoller ?? ExpectedValueDiceRoller()),
       printStats: print,
       maxOnly: maxOnly,
     );
   }
 
+  Strategy mctsStrategy() => MctsStrategy(gameplayEngine(NoopPrinter()));
+
+  GameplayEngine gameplayEngine(Printer printer) =>
+      GameplayEngine(printer, ruleEngine(), random);
+
+  RuleEngine ruleEngine([DiceRoller? diceRoller]) =>
+      RuleEngine(random, diceRoller ?? AccurateDiceRoller());
+
   void printGame(PlayerStrategies strategies,
       {Game? game, DiceRoller? diceRoller}) {
-    final ruleEngine = RuleEngine(random, diceRoller ?? AccurateDiceRoller());
     final printer = CliPrinter();
-    final engine = GameplayEngine(printer, ruleEngine, random);
+    final engine = GameplayEngine(printer, ruleEngine(diceRoller), random);
     game ??= engine.defaultGame();
     engine.run(game, strategies);
   }
 
   void compareStrategies(PlayerStrategies strategies, int count,
       {Game? game, DiceRoller? diceRoller}) {
-    final ruleEngine = RuleEngine(random, diceRoller ?? AccurateDiceRoller());
-    final engine = GameplayEngine(NoopPrinter(), ruleEngine, random);
+    final engine =
+        GameplayEngine(NoopPrinter(), ruleEngine(diceRoller), random);
     game ??= engine.defaultGame();
 
     int winCount = 0;

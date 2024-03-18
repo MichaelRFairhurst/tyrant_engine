@@ -80,6 +80,16 @@ class ActionOrderer {
       return fullRU - action.card.ru;
     }
 
+    if (action is BurnAction) {
+      final ship = game.currentPlayer.ship;
+      // Prefer getting stationary
+      if (ship.momentumRotary + action.rotary == 0) {
+        return 10;
+      }
+      // Prefer bold turns
+      return (ship.momentumRotary + action.rotary).abs();
+    }
+
     throw 'unimplemented';
   }
 }
@@ -109,6 +119,14 @@ class _GameAction {
       final myWeapon = game.currentPlayer.ship.build.slot(myAction.slot);
 
       return Object.hash(FireWeaponAction, myWeapon.hashCode);
+    }
+
+    if (myAction is BurnAction) {
+      return Object.hashAll([
+        BurnAction,
+        game.currentPlayer.ship.momentumRotary,
+        myAction.lateral,
+      ]);
     }
 
     if (myAction is EndPhaseAction) {
@@ -154,6 +172,16 @@ class _GameAction {
           other.game.currentPlayer.ship.build.slot(myAction.slot);
 
       return myWeapon == otherWeapon;
+    }
+
+    if (myAction is BurnAction) {
+      if (otherAction is! BurnAction) {
+        return false;
+      }
+
+      return myAction.rotary == otherAction.rotary &&
+          game.currentPlayer.ship.momentumRotary ==
+              other.game.currentPlayer.ship.momentumRotary;
     }
 
     if (myAction is EndPhaseAction) {

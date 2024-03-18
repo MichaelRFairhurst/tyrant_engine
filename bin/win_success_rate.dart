@@ -9,11 +9,12 @@ void main(List<String> arguments) {
   engine.compareStrategies(
     PlayerStrategies(
       firstPlayerStrategy: DpsStrategy(),
-      secondPlayerStrategy: engine.minimaxStrategy(
-        diceRoller: ExpectedValueDiceRoller(),
-        print: false,
-        maxOnly: true,
-      ),
+      secondPlayerStrategy: engine.mctsStrategy(),
+      //secondPlayerStrategy: engine.minimaxStrategy(
+      //  diceRoller: ExpectedValueDiceRoller(),
+      //  print: false,
+      //  maxOnly: true,
+      //),
       //firstPlayerStrategy: engine.minimaxStrategy(
       //  diceRoller: ExpectedValueDiceRoller(),
       //  print: false,

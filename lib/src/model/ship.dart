@@ -12,6 +12,8 @@ class Ship with _$Ship implements Point {
     required ShipBuild build,
     required int x,
     required int y,
+    // Degrees, 0 = 12 oclock
+    required int orientation,
     @Default(0) int momentumForward,
     @Default(0) int momentumLateral,
     @Default(0) int momentumRotary,

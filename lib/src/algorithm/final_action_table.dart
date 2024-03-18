@@ -28,7 +28,7 @@ class GameFinalActionTable implements FinalActionTable<Game, Action> {
     //  return compute();
     //}
 
-    if (game.turnCount != untilTurn - 2) {
+    if (game.turnCount != untilTurn - 1) {
       return compute();
     }
 
@@ -62,10 +62,12 @@ class _FinalActionTransitionTable
       g.distanceY,
       g.enemyPlayer.ship.build.port.armor,
       g.enemyPlayer.ship.build.starboard.armor,
+      g.enemyPlayer.ship.orientation,
       g.currentPlayer.ru,
       g.currentPlayer.heat,
       g.currentPlayer.activeCrew,
       g.currentPlayer.ship.build,
+      g.currentPlayer.ship.orientation,
     ]);
   }
 
@@ -77,9 +79,11 @@ class _FinalActionTransitionTable
             b.enemyPlayer.ship.build.port.armor &&
         a.enemyPlayer.ship.build.starboard.armor ==
             b.enemyPlayer.ship.build.starboard.armor &&
+        a.enemyPlayer.ship.orientation == b.enemyPlayer.ship.orientation &&
         a.currentPlayer.ru == b.currentPlayer.ru &&
         a.currentPlayer.heat == b.currentPlayer.heat &&
         a.currentPlayer.activeCrew == b.currentPlayer.activeCrew &&
-        a.currentPlayer.ship.build == b.currentPlayer.ship.build;
+        a.currentPlayer.ship.build == b.currentPlayer.ship.build &&
+        a.currentPlayer.ship.orientation == b.currentPlayer.ship.orientation;
   }
 }

@@ -11,4 +11,7 @@ class RandomStrategy implements Strategy {
   @override
   Action pickAction(Game game, List<Action> actions) =>
       actions[random.nextInt(actions.length)];
+
+  @override
+  String get name => 'random strategy';
 }

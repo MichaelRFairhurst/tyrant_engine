@@ -8,7 +8,8 @@ class Side with _$Side {
   const Side._();
 
   const factory Side({
-    int? armor,
+    // A double so that we can simulate averaged damage, etc.
+    double? armor,
     required List<WeaponSlot> weapons,
   }) = _Side;
 

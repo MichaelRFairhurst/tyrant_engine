@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
 
 abstract class Strategy {
   String get name;
-  Action pickAction(Game game, List<Action> actions);
+  FutureOr<Action> pickAction(Game game, List<Action> actions);
 }
 
 class PlayerStrategies {

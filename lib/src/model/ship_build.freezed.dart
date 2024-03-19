@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+ShipBuild _$ShipBuildFromJson(Map<String, dynamic> json) {
+  return _ShipBuild.fromJson(json);
+}
+
 /// @nodoc
 mixin _$ShipBuild {
   Side get forward => throw _privateConstructorUsedError;
@@ -21,6 +25,7 @@ mixin _$ShipBuild {
   Side get port => throw _privateConstructorUsedError;
   Side get starboard => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $ShipBuildCopyWith<ShipBuild> get copyWith =>
       throw _privateConstructorUsedError;
@@ -167,7 +172,7 @@ class __$$_ShipBuildCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_ShipBuild extends _ShipBuild {
   const _$_ShipBuild(
       {required this.forward,
@@ -175,6 +180,9 @@ class _$_ShipBuild extends _ShipBuild {
       required this.port,
       required this.starboard})
       : super._();
+
+  factory _$_ShipBuild.fromJson(Map<String, dynamic> json) =>
+      _$$_ShipBuildFromJson(json);
 
   @override
   final Side forward;
@@ -202,6 +210,7 @@ class _$_ShipBuild extends _ShipBuild {
                 other.starboard == starboard));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, forward, aft, port, starboard);
 
@@ -210,6 +219,13 @@ class _$_ShipBuild extends _ShipBuild {
   @pragma('vm:prefer-inline')
   _$$_ShipBuildCopyWith<_$_ShipBuild> get copyWith =>
       __$$_ShipBuildCopyWithImpl<_$_ShipBuild>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_ShipBuildToJson(
+      this,
+    );
+  }
 }
 
 abstract class _ShipBuild extends ShipBuild {
@@ -219,6 +235,9 @@ abstract class _ShipBuild extends ShipBuild {
       required final Side port,
       required final Side starboard}) = _$_ShipBuild;
   const _ShipBuild._() : super._();
+
+  factory _ShipBuild.fromJson(Map<String, dynamic> json) =
+      _$_ShipBuild.fromJson;
 
   @override
   Side get forward;

@@ -3,6 +3,7 @@ import 'package:tyrant_engine/src/model/ship_build.dart';
 import 'package:tyrant_engine/src/rules/geometry.dart';
 
 part 'ship.freezed.dart';
+part 'ship.g.dart';
 
 @freezed
 class Ship with _$Ship implements Point {
@@ -18,4 +19,6 @@ class Ship with _$Ship implements Point {
     @Default(0) int momentumLateral,
     @Default(0) int momentumRotary,
   }) = _Ship;
+
+  factory Ship.fromJson(Map<String, dynamic> json) => _$ShipFromJson(json);
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:tyrant_engine/src/cli/printer.dart';
@@ -26,11 +27,11 @@ class GameplayEngine {
     );
   }
 
-  PlayerType run(Game game, PlayerStrategies strategies) {
+  Future<PlayerType> run(Game game, PlayerStrategies strategies) async {
     printer.initGame(game);
 
     while (true) {
-      game = playerTurn(game, strategies.player(game.turn));
+      game = await playerTurn(game, strategies.player(game.turn));
 
       if (game.firstPlayer.ship.hp <= 0) {
         printer.gameOver(game, PlayerType.secondPlayer);
@@ -48,7 +49,7 @@ class GameplayEngine {
     }
   }
 
-  Game playerTurn(Game game, Strategy strategy) {
+  Future<Game> playerTurn(Game game, Strategy strategy) async {
     printer.newTurn(game);
 
     final samePlayer = game.turn;
@@ -60,7 +61,7 @@ class GameplayEngine {
       game = pickOutcome(outcomes);
 
       printer.printGame(game);
-      game = performActions(game, strategy);
+      game = await performActions(game, strategy);
     }
 
     printer.printGame(game);
@@ -68,7 +69,7 @@ class GameplayEngine {
     return game;
   }
 
-  Game performActions(Game game, Strategy strategy) {
+  Future<Game> performActions(Game game, Strategy strategy) async {
     late List<Action> actions;
     while (true) {
       actions = ruleEngine.playerActions(game);
@@ -79,7 +80,7 @@ class GameplayEngine {
 
       final chosen = actions.length == 1
           ? actions.single
-          : strategy.pickAction(game, actions);
+          : await strategy.pickAction(game, actions);
 
       printer.chosenAction(chosen);
 

@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Ship _$ShipFromJson(Map<String, dynamic> json) {
+  return _Ship.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Ship {
 // use a doube for ship HP so we can simulate non integer values.
@@ -26,6 +30,7 @@ mixin _$Ship {
   int get momentumLateral => throw _privateConstructorUsedError;
   int get momentumRotary => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $ShipCopyWith<Ship> get copyWith => throw _privateConstructorUsedError;
 }
@@ -191,7 +196,7 @@ class __$$_ShipCopyWithImpl<$Res> extends _$ShipCopyWithImpl<$Res, _$_Ship>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Ship implements _Ship {
   const _$_Ship(
       {this.hp = 60.0,
@@ -202,6 +207,8 @@ class _$_Ship implements _Ship {
       this.momentumForward = 0,
       this.momentumLateral = 0,
       this.momentumRotary = 0});
+
+  factory _$_Ship.fromJson(Map<String, dynamic> json) => _$$_ShipFromJson(json);
 
 // use a doube for ship HP so we can simulate non integer values.
   @override
@@ -250,6 +257,7 @@ class _$_Ship implements _Ship {
                 other.momentumRotary == momentumRotary));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, hp, build, x, y, orientation,
       momentumForward, momentumLateral, momentumRotary);
@@ -259,6 +267,13 @@ class _$_Ship implements _Ship {
   @pragma('vm:prefer-inline')
   _$$_ShipCopyWith<_$_Ship> get copyWith =>
       __$$_ShipCopyWithImpl<_$_Ship>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_ShipToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Ship implements Ship {
@@ -271,6 +286,8 @@ abstract class _Ship implements Ship {
       final int momentumForward,
       final int momentumLateral,
       final int momentumRotary}) = _$_Ship;
+
+  factory _Ship.fromJson(Map<String, dynamic> json) = _$_Ship.fromJson;
 
   @override // use a doube for ship HP so we can simulate non integer values.
   double get hp;

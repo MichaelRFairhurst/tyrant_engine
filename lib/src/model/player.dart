@@ -4,6 +4,7 @@ import 'package:tyrant_engine/src/model/weapon.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
 
 part 'player.freezed.dart';
+part 'player.g.dart';
 
 enum PlayerType {
   firstPlayer,
@@ -37,6 +38,8 @@ class Player with _$Player {
     required Deck hand,
     required Deck deck,
   }) = _Player;
+
+  factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
 
   int get activeCrew => crew.where((c) => c == CrewState.active).length;
 

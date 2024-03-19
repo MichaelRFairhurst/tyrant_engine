@@ -3,6 +3,7 @@ import 'package:tyrant_engine/src/model/dice.dart';
 import 'package:tyrant_engine/src/model/weapon_slot.dart';
 
 part 'weapon.freezed.dart';
+part 'weapon.g.dart';
 
 @freezed
 class Weapon with _$Weapon {
@@ -23,6 +24,8 @@ class Weapon with _$Weapon {
     int? speed,
     @Default(0) int gyro,
   }) = _Weapon;
+
+  factory Weapon.fromJson(Map<String, dynamic> json) => _$WeaponFromJson(json);
 
   @override
   int get hashCode => name.hashCode;

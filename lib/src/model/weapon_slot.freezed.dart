@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+WeaponSlot _$WeaponSlotFromJson(Map<String, dynamic> json) {
+  return _WeaponSlot.fromJson(json);
+}
+
 /// @nodoc
 mixin _$WeaponSlot {
   WeaponSlotType get type => throw _privateConstructorUsedError;
@@ -21,6 +25,7 @@ mixin _$WeaponSlot {
   int get deployCount => throw _privateConstructorUsedError;
   int get tappedCount => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $WeaponSlotCopyWith<WeaponSlot> get copyWith =>
       throw _privateConstructorUsedError;
@@ -148,13 +153,16 @@ class __$$_WeaponSlotCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_WeaponSlot implements _WeaponSlot {
   const _$_WeaponSlot(
       {required this.type,
       this.deployed,
       this.deployCount = 0,
       this.tappedCount = 0});
+
+  factory _$_WeaponSlot.fromJson(Map<String, dynamic> json) =>
+      _$$_WeaponSlotFromJson(json);
 
   @override
   final WeaponSlotType type;
@@ -186,6 +194,7 @@ class _$_WeaponSlot implements _WeaponSlot {
                 other.tappedCount == tappedCount));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode =>
       Object.hash(runtimeType, type, deployed, deployCount, tappedCount);
@@ -195,6 +204,13 @@ class _$_WeaponSlot implements _WeaponSlot {
   @pragma('vm:prefer-inline')
   _$$_WeaponSlotCopyWith<_$_WeaponSlot> get copyWith =>
       __$$_WeaponSlotCopyWithImpl<_$_WeaponSlot>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_WeaponSlotToJson(
+      this,
+    );
+  }
 }
 
 abstract class _WeaponSlot implements WeaponSlot {
@@ -203,6 +219,9 @@ abstract class _WeaponSlot implements WeaponSlot {
       final Weapon? deployed,
       final int deployCount,
       final int tappedCount}) = _$_WeaponSlot;
+
+  factory _WeaponSlot.fromJson(Map<String, dynamic> json) =
+      _$_WeaponSlot.fromJson;
 
   @override
   WeaponSlotType get type;

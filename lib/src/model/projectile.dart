@@ -4,6 +4,7 @@ import 'package:tyrant_engine/src/model/weapon.dart';
 import 'package:tyrant_engine/src/rules/geometry.dart';
 
 part 'projectile.freezed.dart';
+part 'projectile.g.dart';
 
 @freezed
 class Projectile with _$Projectile implements Point {
@@ -13,4 +14,7 @@ class Projectile with _$Projectile implements Point {
     required Weapon weapon,
     required PlayerType firedBy,
   }) = _Projectile;
+
+  factory Projectile.fromJson(Map<String, dynamic> json) =>
+      _$ProjectileFromJson(json);
 }

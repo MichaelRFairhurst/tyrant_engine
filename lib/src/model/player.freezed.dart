@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Player _$PlayerFromJson(Map<String, dynamic> json) {
+  return _Player.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Player {
   int get ru => throw _privateConstructorUsedError;
@@ -23,6 +27,7 @@ mixin _$Player {
   Deck get hand => throw _privateConstructorUsedError;
   Deck get deck => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $PlayerCopyWith<Player> get copyWith => throw _privateConstructorUsedError;
 }
@@ -165,7 +170,7 @@ class __$$_PlayerCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Player extends _Player {
   const _$_Player(
       {this.ru = 10,
@@ -176,6 +181,9 @@ class _$_Player extends _Player {
       required this.deck})
       : _crew = crew,
         super._();
+
+  factory _$_Player.fromJson(Map<String, dynamic> json) =>
+      _$$_PlayerFromJson(json);
 
   @override
   @JsonKey()
@@ -216,6 +224,7 @@ class _$_Player extends _Player {
             (identical(other.deck, deck) || other.deck == deck));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, ru, heat,
       const DeepCollectionEquality().hash(_crew), ship, hand, deck);
@@ -225,6 +234,13 @@ class _$_Player extends _Player {
   @pragma('vm:prefer-inline')
   _$$_PlayerCopyWith<_$_Player> get copyWith =>
       __$$_PlayerCopyWithImpl<_$_Player>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_PlayerToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Player extends Player {
@@ -236,6 +252,8 @@ abstract class _Player extends Player {
       required final Deck hand,
       required final Deck deck}) = _$_Player;
   const _Player._() : super._();
+
+  factory _Player.fromJson(Map<String, dynamic> json) = _$_Player.fromJson;
 
   @override
   int get ru;

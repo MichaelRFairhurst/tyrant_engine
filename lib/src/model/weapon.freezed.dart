@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Weapon _$WeaponFromJson(Map<String, dynamic> json) {
+  return _Weapon.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Weapon {
   String get name => throw _privateConstructorUsedError;
@@ -30,6 +34,7 @@ mixin _$Weapon {
   int? get speed => throw _privateConstructorUsedError;
   int get gyro => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $WeaponCopyWith<Weapon> get copyWith => throw _privateConstructorUsedError;
 }
@@ -256,7 +261,7 @@ class __$$_WeaponCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Weapon extends _Weapon {
   const _$_Weapon(
       {required this.name,
@@ -273,6 +278,9 @@ class _$_Weapon extends _Weapon {
       this.speed,
       this.gyro = 0})
       : super._();
+
+  factory _$_Weapon.fromJson(Map<String, dynamic> json) =>
+      _$$_WeaponFromJson(json);
 
   @override
   final String name;
@@ -312,6 +320,13 @@ class _$_Weapon extends _Weapon {
   @pragma('vm:prefer-inline')
   _$$_WeaponCopyWith<_$_Weapon> get copyWith =>
       __$$_WeaponCopyWithImpl<_$_Weapon>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_WeaponToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Weapon extends Weapon {
@@ -330,6 +345,8 @@ abstract class _Weapon extends Weapon {
       final int? speed,
       final int gyro}) = _$_Weapon;
   const _Weapon._() : super._();
+
+  factory _Weapon.fromJson(Map<String, dynamic> json) = _$_Weapon.fromJson;
 
   @override
   String get name;

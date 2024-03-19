@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Projectile _$ProjectileFromJson(Map<String, dynamic> json) {
+  return _Projectile.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Projectile {
   double get x => throw _privateConstructorUsedError;
@@ -21,6 +25,7 @@ mixin _$Projectile {
   Weapon get weapon => throw _privateConstructorUsedError;
   PlayerType get firedBy => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $ProjectileCopyWith<Projectile> get copyWith =>
       throw _privateConstructorUsedError;
@@ -136,13 +141,16 @@ class __$$_ProjectileCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Projectile implements _Projectile {
   const _$_Projectile(
       {required this.x,
       required this.y,
       required this.weapon,
       required this.firedBy});
+
+  factory _$_Projectile.fromJson(Map<String, dynamic> json) =>
+      _$$_ProjectileFromJson(json);
 
   @override
   final double x;
@@ -169,6 +177,7 @@ class _$_Projectile implements _Projectile {
             (identical(other.firedBy, firedBy) || other.firedBy == firedBy));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, x, y, weapon, firedBy);
 
@@ -177,6 +186,13 @@ class _$_Projectile implements _Projectile {
   @pragma('vm:prefer-inline')
   _$$_ProjectileCopyWith<_$_Projectile> get copyWith =>
       __$$_ProjectileCopyWithImpl<_$_Projectile>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_ProjectileToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Projectile implements Projectile {
@@ -185,6 +201,9 @@ abstract class _Projectile implements Projectile {
       required final double y,
       required final Weapon weapon,
       required final PlayerType firedBy}) = _$_Projectile;
+
+  factory _Projectile.fromJson(Map<String, dynamic> json) =
+      _$_Projectile.fromJson;
 
   @override
   double get x;

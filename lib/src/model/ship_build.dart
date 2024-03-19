@@ -4,6 +4,7 @@ import 'package:tyrant_engine/src/model/weapon_slot.dart';
 import 'package:tyrant_engine/src/model/weapon_slot_descriptor.dart';
 
 part 'ship_build.freezed.dart';
+part 'ship_build.g.dart';
 
 enum Quadrant {
   forward,
@@ -22,6 +23,9 @@ class ShipBuild with _$ShipBuild {
     required Side port,
     required Side starboard,
   }) = _ShipBuild;
+
+  factory ShipBuild.fromJson(Map<String, dynamic> json) =>
+      _$ShipBuildFromJson(json);
 
   List<Side> get allSides => [forward, aft, port, starboard];
 

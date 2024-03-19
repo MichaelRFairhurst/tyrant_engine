@@ -4,6 +4,7 @@ import 'package:tyrant_engine/src/model/projectile.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
 
 part 'game.freezed.dart';
+part 'game.g.dart';
 
 @freezed
 class Game with _$Game {
@@ -17,6 +18,8 @@ class Game with _$Game {
     required Player secondPlayer,
     required List<Projectile> projectiles,
   }) = _Game;
+
+  factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
 
   Player get currentPlayer => playerType(turn);
 

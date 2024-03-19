@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Game _$GameFromJson(Map<String, dynamic> json) {
+  return _Game.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Game {
   int get round => throw _privateConstructorUsedError;
@@ -23,6 +27,7 @@ mixin _$Game {
   Player get secondPlayer => throw _privateConstructorUsedError;
   List<Projectile> get projectiles => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $GameCopyWith<Game> get copyWith => throw _privateConstructorUsedError;
 }
@@ -175,7 +180,7 @@ class __$$_GameCopyWithImpl<$Res> extends _$GameCopyWithImpl<$Res, _$_Game>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Game extends _Game {
   const _$_Game(
       {required this.round,
@@ -186,6 +191,8 @@ class _$_Game extends _Game {
       required final List<Projectile> projectiles})
       : _projectiles = projectiles,
         super._();
+
+  factory _$_Game.fromJson(Map<String, dynamic> json) => _$$_GameFromJson(json);
 
   @override
   final int round;
@@ -225,6 +232,7 @@ class _$_Game extends _Game {
                 .equals(other._projectiles, _projectiles));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, round, phase, turn, firstPlayer,
       secondPlayer, const DeepCollectionEquality().hash(_projectiles));
@@ -234,6 +242,13 @@ class _$_Game extends _Game {
   @pragma('vm:prefer-inline')
   _$$_GameCopyWith<_$_Game> get copyWith =>
       __$$_GameCopyWithImpl<_$_Game>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_GameToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Game extends Game {
@@ -245,6 +260,8 @@ abstract class _Game extends Game {
       required final Player secondPlayer,
       required final List<Projectile> projectiles}) = _$_Game;
   const _Game._() : super._();
+
+  factory _Game.fromJson(Map<String, dynamic> json) = _$_Game.fromJson;
 
   @override
   int get round;

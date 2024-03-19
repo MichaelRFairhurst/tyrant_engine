@@ -1,12 +1,15 @@
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/expected_value_dice_roller.dart';
+import 'package:tyrant_engine/src/algorithm/mcts.dart';
 import 'package:tyrant_engine/src/cli/printer.dart';
 import 'package:tyrant_engine/src/gameplay/accurate_dice_roller.dart';
 import 'package:tyrant_engine/src/gameplay/dice_roller.dart';
 import 'package:tyrant_engine/src/gameplay/gameplay_engine.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
+import 'package:tyrant_engine/src/parallel/mcts_service.dart';
+import 'package:tyrant_engine/src/parallel/mcts_spec.dart';
 import 'package:tyrant_engine/src/rules/rule_engine.dart';
 import 'package:tyrant_engine/src/strategy/mcts_strategy.dart';
 import 'package:tyrant_engine/src/strategy/minimax_strategy.dart';
@@ -27,7 +30,17 @@ class TyrantEngine {
     );
   }
 
-  Strategy mctsStrategy() => MctsStrategy(gameplayEngine(NoopPrinter()));
+  Future<MctsService> mctsService(MctsSpec spec) async {
+    final service = MctsService(spec);
+    await service.run();
+    return service;
+  }
+
+  Mcts mcts(MctsSpec spec) =>
+      Mcts(gameplayEngine(NoopPrinter()), spec.sampleCount);
+
+  Future<Strategy> mctsStrategy(MctsSpec spec) async =>
+      MctsStrategy(await mctsService(spec));
 
   GameplayEngine gameplayEngine(Printer printer) =>
       GameplayEngine(printer, ruleEngine(), random);
@@ -43,8 +56,8 @@ class TyrantEngine {
     engine.run(game, strategies);
   }
 
-  void compareStrategies(PlayerStrategies strategies, int count,
-      {Game? game, DiceRoller? diceRoller}) {
+  Future<void> compareStrategies(PlayerStrategies strategies, int count,
+      {Game? game, DiceRoller? diceRoller}) async {
     final engine =
         GameplayEngine(NoopPrinter(), ruleEngine(diceRoller), random);
     game ??= engine.defaultGame();
@@ -52,7 +65,7 @@ class TyrantEngine {
     int winCount = 0;
     for (int i = 0; i < count; ++i) {
       print('Game $i');
-      final winner = engine.run(game, strategies);
+      final winner = await engine.run(game, strategies);
       final winnerType = strategies.player(winner).name;
       print('  winner: $winner ($winnerType)');
       if (winner == PlayerType.firstPlayer) {

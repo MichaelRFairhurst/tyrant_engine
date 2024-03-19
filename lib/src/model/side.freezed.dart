@@ -14,12 +14,17 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Side _$SideFromJson(Map<String, dynamic> json) {
+  return _Side.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Side {
 // A double so that we can simulate averaged damage, etc.
   double? get armor => throw _privateConstructorUsedError;
   List<WeaponSlot> get weapons => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $SideCopyWith<Side> get copyWith => throw _privateConstructorUsedError;
 }
@@ -96,11 +101,13 @@ class __$$_SideCopyWithImpl<$Res> extends _$SideCopyWithImpl<$Res, _$_Side>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Side extends _Side {
   const _$_Side({this.armor, required final List<WeaponSlot> weapons})
       : _weapons = weapons,
         super._();
+
+  factory _$_Side.fromJson(Map<String, dynamic> json) => _$$_SideFromJson(json);
 
 // A double so that we can simulate averaged damage, etc.
   @override
@@ -126,6 +133,7 @@ class _$_Side extends _Side {
             const DeepCollectionEquality().equals(other._weapons, _weapons));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType, armor, const DeepCollectionEquality().hash(_weapons));
@@ -135,12 +143,21 @@ class _$_Side extends _Side {
   @pragma('vm:prefer-inline')
   _$$_SideCopyWith<_$_Side> get copyWith =>
       __$$_SideCopyWithImpl<_$_Side>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_SideToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Side extends Side {
   const factory _Side(
       {final double? armor, required final List<WeaponSlot> weapons}) = _$_Side;
   const _Side._() : super._();
+
+  factory _Side.fromJson(Map<String, dynamic> json) = _$_Side.fromJson;
 
   @override // A double so that we can simulate averaged damage, etc.
   double? get armor;

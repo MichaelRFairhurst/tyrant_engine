@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'dice.freezed.dart';
+part 'dice.g.dart';
 
 const r1d4 = Dice(rolls: 1, sides: 4);
 const r2d4 = Dice(rolls: 2, sides: 4);
@@ -37,6 +38,8 @@ class Dice with _$Dice {
     required int rolls,
     required int sides,
   }) = _Dice;
+
+  factory Dice.fromJson(Map<String, dynamic> json) => _$DiceFromJson(json);
 
   double get expectedValue => rolls * (sides + 1) / 2;
 }

@@ -13,6 +13,17 @@ class Deck {
     required this.idSystem,
   });
 
+  List<Map<String, dynamic>> toJson() => countMap.entries
+      .map((e) => {'card': e.key.toJson(), 'count': e.value})
+      .toList();
+
+  factory Deck.fromJson(List<Map<String, dynamic>> json) {
+    final map = Map<Weapon, int>.fromEntries(json.map((item) => MapEntry(
+        Weapon.fromJson(item['card'] as Map<String, dynamic>),
+        item['count'] as int)));
+    return DeckIdSystem().zero(map);
+  }
+
   Deck remove(Weapon weapon) {
     return removalMap.putIfAbsent(weapon, () {
       final count = countMap[weapon];

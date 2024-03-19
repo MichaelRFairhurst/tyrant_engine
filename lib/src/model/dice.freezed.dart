@@ -14,11 +14,16 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+Dice _$DiceFromJson(Map<String, dynamic> json) {
+  return _Dice.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Dice {
   int get rolls => throw _privateConstructorUsedError;
   int get sides => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $DiceCopyWith<Dice> get copyWith => throw _privateConstructorUsedError;
 }
@@ -95,9 +100,11 @@ class __$$_DiceCopyWithImpl<$Res> extends _$DiceCopyWithImpl<$Res, _$_Dice>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Dice extends _Dice {
   const _$_Dice({required this.rolls, required this.sides}) : super._();
+
+  factory _$_Dice.fromJson(Map<String, dynamic> json) => _$$_DiceFromJson(json);
 
   @override
   final int rolls;
@@ -118,6 +125,7 @@ class _$_Dice extends _Dice {
             (identical(other.sides, sides) || other.sides == sides));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, rolls, sides);
 
@@ -126,12 +134,21 @@ class _$_Dice extends _Dice {
   @pragma('vm:prefer-inline')
   _$$_DiceCopyWith<_$_Dice> get copyWith =>
       __$$_DiceCopyWithImpl<_$_Dice>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_DiceToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Dice extends Dice {
   const factory _Dice({required final int rolls, required final int sides}) =
       _$_Dice;
   const _Dice._() : super._();
+
+  factory _Dice.fromJson(Map<String, dynamic> json) = _$_Dice.fromJson;
 
   @override
   int get rolls;

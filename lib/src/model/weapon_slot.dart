@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tyrant_engine/src/model/weapon.dart';
 
 part 'weapon_slot.freezed.dart';
+part 'weapon_slot.g.dart';
 
 enum WeaponSlotType {
   railgun,
@@ -19,4 +20,7 @@ class WeaponSlot with _$WeaponSlot {
     @Default(0) int deployCount,
     @Default(0) int tappedCount,
   }) = _WeaponSlot;
+
+  factory WeaponSlot.fromJson(Map<String, dynamic> json) =>
+      _$WeaponSlotFromJson(json);
 }

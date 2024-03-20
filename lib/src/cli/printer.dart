@@ -98,6 +98,7 @@ class CliPrinter implements Printer {
   @override
   void randomOutcome(RandomOutcome outcome) {
     print('-[Random outcome: ${outcome.explanation()}]');
+    printGame(outcome.result);
     print('');
   }
 

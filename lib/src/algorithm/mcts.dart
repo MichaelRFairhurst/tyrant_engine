@@ -38,7 +38,7 @@ class Mcts {
     int victories = 0;
     for (int i = 0; i < sampleCount; ++i) {
       final outcome = gameplayEngine.pickOutcome(ifPerformed);
-      final winner = await gameplayEngine.run(outcome, randomStrategies);
+      final winner = await gameplayEngine.run(outcome.result, randomStrategies);
       if (winner == game.turn) {
         victories++;
       }

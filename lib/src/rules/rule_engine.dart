@@ -107,6 +107,25 @@ class RuleEngine {
     return player;
   }
 
+  PlayerType? winner(Game game) {
+    if (hasLost(game.firstPlayer)) {
+      return PlayerType.secondPlayer;
+    } else if (hasLost(game.secondPlayer)) {
+      return PlayerType.firstPlayer;
+    }
+
+    return null;
+  }
+
+  bool hasLost(Player player) {
+    if (player.ship.hp <= 0) {
+      return true;
+    } else if (player.crew.every((c) => c == CrewState.killed)) {
+      return true;
+    }
+    return false;
+  }
+
   Outcome<Game> tick({
     required Game game,
   }) {

@@ -58,8 +58,8 @@ class TyrantEngine {
 
   Future<void> compareStrategies(PlayerStrategies strategies, int count,
       {Game? game, DiceRoller? diceRoller}) async {
-    final engine =
-        GameplayEngine(NoopPrinter(), ruleEngine(diceRoller), random);
+    final rules = ruleEngine(diceRoller);
+    final engine = GameplayEngine(NoopPrinter(), rules, random);
     game ??= engine.defaultGame();
 
     int winCount = 0;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:tyrant_engine/src/cli/printer.dart';
+import 'package:tyrant_engine/src/gameplay/gameplay_visitor.dart';
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
 import 'package:tyrant_engine/src/rules/action.dart';
@@ -11,8 +12,9 @@ import 'package:tyrant_engine/src/content/decks.dart' as decks;
 import 'package:tyrant_engine/src/content/ships.dart' as ships;
 import 'package:tyrant_engine/src/strategy/strategy.dart';
 
-class GameplayEngine {
+class GameplayEngine extends GameplayVisitor<Future<PlayerType>> {
   final RuleEngine ruleEngine;
+  late PlayerStrategies strategies;
   final Printer printer;
   final Random random;
 
@@ -27,78 +29,71 @@ class GameplayEngine {
     );
   }
 
-  Future<PlayerType> run(Game game, PlayerStrategies strategies) async {
+  Future<PlayerType> run(Game game, PlayerStrategies strategies) {
+    this.strategies = strategies;
     printer.initGame(game);
 
-    while (true) {
-      game = await playerTurn(game, strategies.player(game.turn));
-
-      if (game.firstPlayer.ship.hp <= 0) {
-        printer.gameOver(game, PlayerType.secondPlayer);
-        return PlayerType.secondPlayer;
-      }
-
-      if (game.secondPlayer.ship.hp <= 0) {
-        printer.gameOver(game, PlayerType.firstPlayer);
-        return PlayerType.firstPlayer;
-      }
-
-      if (game.turn == PlayerType.firstPlayer) {
-        printer.newRound(game);
-      }
-    }
+    return visitAll(game, ruleEngine);
   }
 
-  Future<Game> playerTurn(Game game, Strategy strategy) async {
+  @override
+  Future<PlayerType> visitRound(
+      Game game, Future<PlayerType> Function() keepVisiting) {
+    printer.newRound(game);
+    return keepVisiting();
+  }
+
+  @override
+  Future<PlayerType> visitTurn(
+      Game game, Future<PlayerType> Function() keepVisiting) {
     printer.newTurn(game);
-
-    final samePlayer = game.turn;
-    while (game.turn == samePlayer) {
-      printer.startPhase(game);
-      var outcomes = ruleEngine.tick(
-        game: game,
-      );
-      game = pickOutcome(outcomes);
-
-      printer.printGame(game);
-      game = await performActions(game, strategy);
-    }
-
-    printer.printGame(game);
-
-    return game;
+    return keepVisiting();
   }
 
-  Future<Game> performActions(Game game, Strategy strategy) async {
-    late List<Action> actions;
-    while (true) {
-      actions = ruleEngine.playerActions(game);
+  @override
+  Future<PlayerType> visitPhase(
+      Game game, Future<PlayerType> Function() keepVisiting) {
+    printer.startPhase(game);
+    return keepVisiting();
+  }
 
-      if (actions.isEmpty) {
-        break;
+  @override
+  Future<PlayerType> visitActions(Game game, List<Action> actions,
+      Future<PlayerType> Function(Action) visitAction) async {
+    final act = await strategies.player(game.turn).pickAction(game, actions);
+    printer.chosenAction(act);
+    return visitAction(act);
+  }
+
+  @override
+  Future<PlayerType> visitOutcomes(
+          Outcome<Game> outcomes,
+          Future<PlayerType> Function(RandomOutcome<Game>)
+              visitRandomOutcome) =>
+      visitRandomOutcome(pickOutcome(outcomes));
+
+  RandomOutcome<Game> pickOutcome(Outcome<Game> outcomes) {
+    var select = random.nextDouble();
+    for (final ro in outcomes.randomOutcomes) {
+      select -= ro.probability;
+      if (select < 0) {
+        printer.randomOutcome(ro);
+        return ro;
       }
-
-      final chosen = actions.length == 1
-          ? actions.single
-          : await strategy.pickAction(game, actions);
-
-      printer.chosenAction(chosen);
-
-      game = pickOutcome(chosen.perform(game));
-      printer.printGame(game);
     }
-    return game;
+    throw 'unreachable';
   }
 
-  Game pickOutcome(Outcome<Game> outcomes) {
-    if (outcomes.randomOutcomes.length == 1) {
-      return outcomes.randomOutcomes.single.result;
-    }
-
-    final outcome = outcomes.randomOutcomes
-        .toList()[random.nextInt(outcomes.randomOutcomes.length)];
-
+  @override
+  Future<PlayerType> visitSingularOutcome(
+      RandomOutcome<Game> outcome, Future<PlayerType> Function() keepVisiting) {
     printer.randomOutcome(outcome);
-    return outcome.result;
+    return keepVisiting();
+  }
+
+  @override
+  Future<PlayerType> visitWinner(Game game, PlayerType winner) async {
+    printer.gameOver(game, winner);
+    return winner;
   }
 }

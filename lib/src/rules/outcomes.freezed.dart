@@ -240,11 +240,12 @@ class __$$_RandomOutcomeCopyWithImpl<T, $Res>
 
 /// @nodoc
 
-class _$_RandomOutcome<T> implements _RandomOutcome<T> {
+class _$_RandomOutcome<T> extends _RandomOutcome<T> {
   const _$_RandomOutcome(
       {required this.explanation,
       required this.probability,
-      required this.result});
+      required this.result})
+      : super._();
 
   @override
   final String Function() explanation;
@@ -281,11 +282,12 @@ class _$_RandomOutcome<T> implements _RandomOutcome<T> {
       __$$_RandomOutcomeCopyWithImpl<T, _$_RandomOutcome<T>>(this, _$identity);
 }
 
-abstract class _RandomOutcome<T> implements RandomOutcome<T> {
+abstract class _RandomOutcome<T> extends RandomOutcome<T> {
   const factory _RandomOutcome(
       {required final String Function() explanation,
       required final double probability,
       required final T result}) = _$_RandomOutcome<T>;
+  const _RandomOutcome._() : super._();
 
   @override
   String Function() get explanation;

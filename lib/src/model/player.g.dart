@@ -15,14 +15,10 @@ _$_Player _$$_PlayerFromJson(Map<String, dynamic> json) => _$_Player(
           startingCrew,
       ship: Ship.fromJson(json['ship'] as Map<String, dynamic>),
       hand: Deck.fromJson((json['hand'] as List<dynamic>)
-          .map((e) => (e as Map<String, dynamic>).map(
-                (k, e) => MapEntry(k, e as Object),
-              ))
+          .map((e) => e as Map<String, dynamic>)
           .toList()),
       deck: Deck.fromJson((json['deck'] as List<dynamic>)
-          .map((e) => (e as Map<String, dynamic>).map(
-                (k, e) => MapEntry(k, e as Object),
-              ))
+          .map((e) => e as Map<String, dynamic>)
           .toList()),
     );
 

@@ -27,6 +27,21 @@ class Outcome<T> with _$Outcome<T> {
                 result: f(o.result),
               ))
           .toList());
+
+  Outcome<G> mapWithProbability<G>(
+          RandomOutcome<G> Function(RandomOutcome<T>) f) =>
+      Outcome<G>(randomOutcomes: randomOutcomes.map((o) => f(o)).toList());
+
+  RandomOutcome<T> pick(double select) {
+    for (final ro in randomOutcomes) {
+      select -= ro.probability;
+      if (select < 0) {
+        return ro;
+      }
+    }
+
+    throw 'unreachable';
+  }
 }
 
 @freezed

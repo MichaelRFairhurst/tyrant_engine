@@ -8,6 +8,7 @@ class MctsSpec with _$MctsSpec {
   const factory MctsSpec({
     required int sampleCount,
     required int threads,
+    @Default(10) int maxDepth,
   }) = _MctsSpec;
 
   factory MctsSpec.fromJson(Map<String, dynamic> json) =>

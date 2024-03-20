@@ -10,8 +10,11 @@ void main(List<String> arguments) async {
   engine.compareStrategies(
     PlayerStrategies(
       firstPlayerStrategy: DpsStrategy(),
-      secondPlayerStrategy:
-          await engine.mctsStrategy(MctsSpec(sampleCount: 200, threads: 16)),
+      secondPlayerStrategy: await engine.mctsStrategy(MctsSpec(
+        sampleCount: 500,
+        threads: 16,
+        maxDepth: 30,
+      )),
       //secondPlayerStrategy: engine.minimaxStrategy(
       //  diceRoller: ExpectedValueDiceRoller(),
       //  print: false,
@@ -24,7 +27,7 @@ void main(List<String> arguments) async {
       //),
       //secondPlayerStrategy: DpsStrategy(),
     ),
-    200,
+    20,
     diceRoller: ExpectedValueDiceRoller(),
   );
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:tyrant_engine/src/model/game.dart';
 import 'package:tyrant_engine/src/model/player.dart';
+import 'package:tyrant_engine/src/model/projectile.dart';
 import 'package:tyrant_engine/src/model/ship.dart';
 import 'package:tyrant_engine/src/model/ship_build.dart';
 import 'package:tyrant_engine/src/model/weapon_slot.dart';
@@ -216,18 +217,23 @@ PLAYER {PLAYER_TYPE_STR} SHIP:
 
   void printBoard(Game game) {
     final sizeX = game.distanceX + 12;
-    final sizeY = game.distanceY + 6;
     final ship1 = game.firstPlayer.ship;
     final ship2 = game.secondPlayer.ship;
     final relativeX = min(ship1.x, ship2.x);
-    final relativeY = min(ship1.y, ship2.y);
+    final minY = min(ship1.y, ship2.y) - 3;
+    final maxY = max(ship1.y, ship2.y) + 3;
 
     final topBottomLine = '+' * (sizeX + 2);
     var output = topBottomLine;
-    for (var y = relativeY - 3; y < sizeY + relativeY - 3; ++y) {
+    for (var y = maxY; y >= minY; --y) {
       var line = ' ' * sizeX;
       line = putShip(line, y, ship1, relativeX - 6);
       line = putShip(line, y, ship2, relativeX - 6);
+      for (final projectile in game.projectiles) {
+        if (projectile.y.round() == y) {
+          line = putProjectile(line, projectile, relativeX - 6);
+        }
+      }
       output = '$output\n+$line+';
     }
     output = '$output\n$topBottomLine';
@@ -236,13 +242,19 @@ PLAYER {PLAYER_TYPE_STR} SHIP:
     print(output);
   }
 
+  String putProjectile(String str, Projectile projectile, int relativeX) {
+    final dotType = projectile.firedBy == PlayerType.firstPlayer ? '1' : '2';
+    return str.replaceRange(projectile.x.round() - relativeX,
+        projectile.x.round() + 1 - relativeX, dotType);
+  }
+
   String putShip(String str, int y, Ship ship, int relativeX) {
     String charAt(int offset, String char) {
       return str.replaceRange(
           ship.x + offset - relativeX, ship.x + offset + 1 - relativeX, char);
     }
 
-    if (y == ship.y - 1) {
+    if (y == ship.y + 1) {
       switch (ship.orientation) {
         case 90:
         case 270:
@@ -278,7 +290,7 @@ PLAYER {PLAYER_TYPE_STR} SHIP:
         case 315:
           return charAt(0, r'\');
       }
-    } else if (y == ship.y + 1) {
+    } else if (y == ship.y - 1) {
       switch (ship.orientation) {
         case 90:
         case 270:

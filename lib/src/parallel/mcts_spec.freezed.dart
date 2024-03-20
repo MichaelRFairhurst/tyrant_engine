@@ -22,6 +22,7 @@ MctsSpec _$MctsSpecFromJson(Map<String, dynamic> json) {
 mixin _$MctsSpec {
   int get sampleCount => throw _privateConstructorUsedError;
   int get threads => throw _privateConstructorUsedError;
+  int get maxDepth => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -34,7 +35,7 @@ abstract class $MctsSpecCopyWith<$Res> {
   factory $MctsSpecCopyWith(MctsSpec value, $Res Function(MctsSpec) then) =
       _$MctsSpecCopyWithImpl<$Res, MctsSpec>;
   @useResult
-  $Res call({int sampleCount, int threads});
+  $Res call({int sampleCount, int threads, int maxDepth});
 }
 
 /// @nodoc
@@ -52,6 +53,7 @@ class _$MctsSpecCopyWithImpl<$Res, $Val extends MctsSpec>
   $Res call({
     Object? sampleCount = null,
     Object? threads = null,
+    Object? maxDepth = null,
   }) {
     return _then(_value.copyWith(
       sampleCount: null == sampleCount
@@ -61,6 +63,10 @@ class _$MctsSpecCopyWithImpl<$Res, $Val extends MctsSpec>
       threads: null == threads
           ? _value.threads
           : threads // ignore: cast_nullable_to_non_nullable
+              as int,
+      maxDepth: null == maxDepth
+          ? _value.maxDepth
+          : maxDepth // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -73,7 +79,7 @@ abstract class _$$_MctsSpecCopyWith<$Res> implements $MctsSpecCopyWith<$Res> {
       __$$_MctsSpecCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int sampleCount, int threads});
+  $Res call({int sampleCount, int threads, int maxDepth});
 }
 
 /// @nodoc
@@ -89,6 +95,7 @@ class __$$_MctsSpecCopyWithImpl<$Res>
   $Res call({
     Object? sampleCount = null,
     Object? threads = null,
+    Object? maxDepth = null,
   }) {
     return _then(_$_MctsSpec(
       sampleCount: null == sampleCount
@@ -99,6 +106,10 @@ class __$$_MctsSpecCopyWithImpl<$Res>
           ? _value.threads
           : threads // ignore: cast_nullable_to_non_nullable
               as int,
+      maxDepth: null == maxDepth
+          ? _value.maxDepth
+          : maxDepth // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -106,7 +117,8 @@ class __$$_MctsSpecCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_MctsSpec implements _MctsSpec {
-  const _$_MctsSpec({required this.sampleCount, required this.threads});
+  const _$_MctsSpec(
+      {required this.sampleCount, required this.threads, this.maxDepth = 15});
 
   factory _$_MctsSpec.fromJson(Map<String, dynamic> json) =>
       _$$_MctsSpecFromJson(json);
@@ -115,10 +127,13 @@ class _$_MctsSpec implements _MctsSpec {
   final int sampleCount;
   @override
   final int threads;
+  @override
+  @JsonKey()
+  final int maxDepth;
 
   @override
   String toString() {
-    return 'MctsSpec(sampleCount: $sampleCount, threads: $threads)';
+    return 'MctsSpec(sampleCount: $sampleCount, threads: $threads, maxDepth: $maxDepth)';
   }
 
   @override
@@ -128,12 +143,14 @@ class _$_MctsSpec implements _MctsSpec {
             other is _$_MctsSpec &&
             (identical(other.sampleCount, sampleCount) ||
                 other.sampleCount == sampleCount) &&
-            (identical(other.threads, threads) || other.threads == threads));
+            (identical(other.threads, threads) || other.threads == threads) &&
+            (identical(other.maxDepth, maxDepth) ||
+                other.maxDepth == maxDepth));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, sampleCount, threads);
+  int get hashCode => Object.hash(runtimeType, sampleCount, threads, maxDepth);
 
   @JsonKey(ignore: true)
   @override
@@ -152,7 +169,8 @@ class _$_MctsSpec implements _MctsSpec {
 abstract class _MctsSpec implements MctsSpec {
   const factory _MctsSpec(
       {required final int sampleCount,
-      required final int threads}) = _$_MctsSpec;
+      required final int threads,
+      final int maxDepth}) = _$_MctsSpec;
 
   factory _MctsSpec.fromJson(Map<String, dynamic> json) = _$_MctsSpec.fromJson;
 
@@ -160,6 +178,8 @@ abstract class _MctsSpec implements MctsSpec {
   int get sampleCount;
   @override
   int get threads;
+  @override
+  int get maxDepth;
   @override
   @JsonKey(ignore: true)
   _$$_MctsSpecCopyWith<_$_MctsSpec> get copyWith =>

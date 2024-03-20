@@ -36,8 +36,7 @@ class TyrantEngine {
     return service;
   }
 
-  Mcts mcts(MctsSpec spec) =>
-      Mcts(gameplayEngine(NoopPrinter()), spec.sampleCount);
+  Mcts mcts(MctsSpec spec) => Mcts(ruleEngine(), random, spec);
 
   Future<Strategy> mctsStrategy(MctsSpec spec) async =>
       MctsStrategy(await mctsService(spec));

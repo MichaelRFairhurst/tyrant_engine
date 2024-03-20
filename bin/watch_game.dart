@@ -11,8 +11,8 @@ void main(List<String> arguments) async {
   engine.printGame(
     PlayerStrategies(
       firstPlayerStrategy: DpsStrategy(),
-      secondPlayerStrategy:
-          await engine.mctsStrategy(MctsSpec(sampleCount: 1000, threads: 16)),
+      secondPlayerStrategy: await engine
+          .mctsStrategy(MctsSpec(sampleCount: 500, threads: 16, maxDepth: 30)),
       //secondPlayerStrategy: engine.minimaxStrategy(
       //  print: true,
       //  //diceRoller: ReducedDiceRoller(2),

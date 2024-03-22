@@ -38,8 +38,8 @@ class Mcts {
       Game game, List<Action> actions, int idx) async {
     final ifPerformed = actions[idx].perform(game);
     final treeBuilder = _MctsTreeBuilder();
-    final tree = treeBuilder.visitOutcomes(
-        ifPerformed, (child) => treeBuilder.visitAll(child.result, ruleEngine));
+    final tree = treeBuilder.visitOutcomes(game, ifPerformed,
+        (child) => treeBuilder.visitAll(child.result, ruleEngine));
     int victories = 0;
     for (int i = 0; i < spec.sampleCount; ++i) {
       final winner = _simulate(tree, 0);
@@ -47,26 +47,31 @@ class Mcts {
         victories++;
       }
     }
+    print('${actions[idx]} victories: $victories');
     return victories;
   }
 
   PlayerType _simulate(_MctsNode tree, int depth) {
     if (tree is _MctsLeaf) {
-      return tree.winner;
+      return tree.handleWinner(tree.winner);
     }
     if (tree is _MctsRandom) {
       final next = tree.outcomes.pick(random.nextDouble()).result;
-      return _simulate(next, depth + 1);
+      return tree.handleWinner(_simulate(next, depth + 1));
     }
     if (tree is _MctsBranch) {
       if (depth >= spec.maxDepth) {
-        return scorer.score(tree.game) > 0
+        return tree.handleWinner(scorer.score(tree.game) > 0
             ? PlayerType.firstPlayer
-            : PlayerType.secondPlayer;
+            : PlayerType.secondPlayer);
       } else {
-        return _simulate(
-            tree.children[random.nextInt(tree.children.length)].result,
-            depth + 1);
+        final child = tree.children
+            .reduce((c, next) => c.result.uct(tree.simulations) >
+                    next.result.uct(tree.simulations)
+                ? c
+                : next)
+            .result;
+        return tree.handleWinner(_simulate(child, depth + 1));
       }
     }
     throw 'unreachable';
@@ -82,10 +87,12 @@ class _MctsTreeBuilder extends GameplayVisitor<_MctsNode> {
   }
 
   @override
-  _MctsNode visitOutcomes(Outcome<Game> outcomes,
+  _MctsNode visitOutcomes(Game game, Outcome<Game> outcomes,
       _MctsNode Function(RandomOutcome<Game> p1) visitRandomOutcome) {
-    return _MctsRandom(outcomes
-        .mapWithProbability((ro) => ro.map((_) => visitRandomOutcome(ro))));
+    return _MctsRandom(
+        game,
+        outcomes
+            .mapWithProbability((ro) => ro.map((_) => visitRandomOutcome(ro))));
   }
 
   @override
@@ -94,19 +101,48 @@ class _MctsTreeBuilder extends GameplayVisitor<_MctsNode> {
   }
 }
 
-class _MctsNode {}
+abstract class _MctsNode {
+  int wins = 0;
+  int simulations = 0;
+  static const c = 1.41;
 
-class _MctsBranch implements _MctsNode {
+  PlayerType handleWinner(PlayerType winner);
+
+  double uct(int parentSimulations) {
+    return wins / simulations + c * sqrt(log(parentSimulations) / simulations);
+  }
+}
+
+class _MctsBranch extends _MctsNode {
   final Game game;
   final List<_Lazy<_MctsNode>> children;
+
+  @override
+  PlayerType handleWinner(PlayerType winner) {
+    simulations++;
+    if (game.turn == winner) {
+      wins++;
+    }
+    return winner;
+  }
 
   _MctsBranch(this.game, this.children);
 }
 
-class _MctsRandom implements _MctsNode {
+class _MctsRandom extends _MctsNode {
   final Outcome<_MctsNode> outcomes;
+  final Game game;
 
-  _MctsRandom(this.outcomes);
+  _MctsRandom(this.game, this.outcomes);
+
+  @override
+  PlayerType handleWinner(PlayerType winner) {
+    simulations++;
+    if (game.turn == winner) {
+      wins++;
+    }
+    return winner;
+  }
 }
 
 class _Lazy<T> {
@@ -118,7 +154,15 @@ class _Lazy<T> {
   T get result => _result ??= _compute();
 }
 
-class _MctsLeaf implements _MctsNode {
+class _MctsLeaf extends _MctsNode {
   final PlayerType winner;
   _MctsLeaf(this.winner);
+
+  @override
+  PlayerType handleWinner(PlayerType winner) {
+    assert(winner == this.winner);
+    simulations++;
+    wins++;
+    return winner;
+  }
 }

@@ -23,7 +23,7 @@ class GameplayExecution<T> {
 
       if (outcomes.isBranching) {
         return visitor.visitOutcomes(
-            outcomes, (child) => _directGame(game, child.result));
+            game, outcomes, (child) => _directGame(game, child.result));
       } else {
         return visitor.visitSingularOutcome(outcomes.randomOutcomes.single,
             () => performActions(outcomes.single));
@@ -52,7 +52,7 @@ class GameplayExecution<T> {
           () => _directGame(oldGame, outcome.single));
     } else {
       return visitor.visitOutcomes(
-          outcome, (newGame) => _directGame(oldGame, newGame.result));
+          oldGame, outcome, (newGame) => _directGame(oldGame, newGame.result));
     }
   }
 

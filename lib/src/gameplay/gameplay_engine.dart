@@ -67,6 +67,7 @@ class GameplayEngine extends GameplayVisitor<Future<PlayerType>> {
 
   @override
   Future<PlayerType> visitOutcomes(
+          Game game,
           Outcome<Game> outcomes,
           Future<PlayerType> Function(RandomOutcome<Game>)
               visitRandomOutcome) =>

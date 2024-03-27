@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:tyrant_engine/src/algorithm/deck_cache.dart';
@@ -250,28 +251,57 @@ class RuleEngine {
     final target = game.turn == PlayerType.firstPlayer
         ? PlayerType.secondPlayer
         : PlayerType.firstPlayer;
+    int gameHash(Game game) => Object.hashAll([
+          game.enemyPlayer.ship.hp,
+          game.enemyPlayer.ship.build.port.armor,
+          game.enemyPlayer.ship.build.starboard.armor,
+        ]);
+
+    var outcomeMap = HashMap<Game, RandomOutcome<Game>>(hashCode: gameHash);
+    outcomeMap[driftsOnly] = outcome.randomOutcomes.single;
+
     for (final impact in impacts) {
       final targetedArc = geometry.targetedArc(
           firing: impact, target: game.playerType(target).ship);
-      final newOutcomes = <RandomOutcome<Game>>[];
-      for (final state in outcome.randomOutcomes) {
+      //final newOutcomes = <RandomOutcome<Game>>[];
+      //for (final state in outcome.randomOutcomes) {
+      final newMap = HashMap<Game, RandomOutcome<Game>>(hashCode: gameHash);
+      for (final state in outcomeMap.values) {
         final dmgStates = applyDamage(
             state.result, target, targetedArc, impact.weapon.damage);
 
         for (final dmgState in dmgStates.randomOutcomes) {
-          newOutcomes.add(RandomOutcome<Game>(
-            explanation: () =>
-                dmgState.explanation() + ', ' + state.explanation(),
-            probability: dmgState.probability * state.probability,
-            result: dmgState.result,
-          ));
+          final overlapping = newMap[dmgState.result];
+          if (overlapping != null) {
+            newMap[dmgState.result] = RandomOutcome<Game>(
+              explanation: () => '(${overlapping.explanation()}) or'
+                  ' (${dmgState.explanation()}, ${state.explanation()})',
+              probability: dmgState.probability * state.probability +
+                  overlapping.probability,
+              result: dmgState.result,
+            );
+          } else {
+            newMap[dmgState.result] = RandomOutcome<Game>(
+              explanation: () =>
+                  dmgState.explanation() + ', ' + state.explanation(),
+              probability: dmgState.probability * state.probability,
+              result: dmgState.result,
+            );
+          }
+          //newOutcomes.add(RandomOutcome<Game>(
+          //  explanation: () =>
+          //      dmgState.explanation() + ', ' + state.explanation(),
+          //  probability: dmgState.probability * state.probability,
+          //  result: dmgState.result,
+          //));
         }
       }
 
-      outcome = Outcome<Game>(randomOutcomes: newOutcomes);
+      //outcome = Outcome<Game>(randomOutcomes: newOutcomes);
+      outcomeMap = newMap;
     }
 
-    return outcome;
+    return Outcome(randomOutcomes: outcomeMap.values.toList());
   }
 
   Outcome<Game> applyDamage(

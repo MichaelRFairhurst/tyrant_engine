@@ -15,7 +15,7 @@ abstract class GameplayVisitor<T> {
   T visitPhase(Game game, T Function() keepVisiting) => keepVisiting();
   T visitActions(
       Game game, List<Action> actions, T Function(Action) visitAction);
-  T visitOutcomes(Outcome<Game> outcomes,
+  T visitOutcomes(Game game, Outcome<Game> outcomes,
       T Function(RandomOutcome<Game>) visitRandomOutcome);
   T visitSingularOutcome(
           RandomOutcome<Game> outcome, T Function() keepVisiting) =>
